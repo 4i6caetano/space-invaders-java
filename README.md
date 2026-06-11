@@ -4,6 +4,7 @@
 
 ## Developers:
 <div style="display:inline-block; padding:1rem;">
+    <a href="https://github.com/https://github.com/4i6caetano">
     <img src="https://github.com/4i6caetano.png" style="height: 60px; border-radius:40px">
     <ul style="display:inline-block">
         <li><span>João Pedro Correia Caetano</span>
@@ -11,9 +12,18 @@
 </div>
 
 <div style="display:inline-block; padding:1rem;">
+    <a href="https://github.com/https://github.com/ItzCrynix">
     <img src="https://github.com/ItzCrynix.png" style="height: 60px; border-radius:40px">
     <ul style="display:inline-block">
         <li><span>Cainan Loyola Schiavolin</span>
+    </ul>
+</div>
+
+<div style="display:inline-block; padding:1rem;">
+    <a href="https://github.com/kawancosta1">
+    <img src="https://github.com/kawancosta1.png" style="height: 60px; border-radius:40px"/>
+    <ul style="display:inline-block">
+        <li><span>Kawan da Silva Costa</span>
     </ul>
 </div>
 
@@ -22,33 +32,29 @@
 The goal and requisites are the following:
 
 ### Objective
-Apply OOP design patterns in a game context, use LibGDX for screen management and graphics, and implement multi-level progression and local cooperative gameplay.
+Apply OOP design and use LibGDX for screen management, graphics, and input. Implement game entity classes with clear inheritance and encapsulation.
 
 ### Required Features
-- Game Setup
-- Main menu with “New Game”, “Load Game”, and “Exit”.
-- LibGDX screen manager to transition between menus and gameplay.
-- Core Game Mechanics
-- Players move their ships left/right and fire projectiles upward.
-- Alien formations move toward the players and drop bombs periodically.
- -Collision detection: projectiles destroy aliens; alien bombs or bodies destroy player ships.
-- Two-Player Co-op
-- Two players share the screen using different keyboard keys.
-- Both ships have individual lives; the game ends when all lives are lost.
-- Levels and Difficulty
-- At least 3 levels with progressively faster aliens and/or more complex movement patterns.
-- Brief “Level Complete” screen between levels.
-- Scoring and Lives
-- Points for each alien destroyed; bonus points for level completion.
-- Each player starts with 3 lives.
-- Real-time score and lives are displayed on screen.
-- Save and Load
-- Save current game progress (level, scores, lives) to a file.
-- Load a previously saved game from the main menu.
+1. Game Setup
+- Main menu with 'New Game' and 'Exit'.
+- LibGDX screen manager for transitions between menu, gameplay, and game over.
+2. Core Game Mechanics
+- Player moves left/right and fires projectiles upward.
+- Alien formations advance toward the player and drop bombs.
+- Collision detection: projectiles destroy aliens; aliens destroy the player ship.
+3. Levels and Difficulty
+- At least 2 levels with progressively faster aliens.
+- Brief 'Level Complete' screen between levels.
+4. Scoring and Lives
+- Points per alien destroyed.
+- Player starts with 3 lives; the game ends when all lives are lost.
+- Score and lives always visible on screen.
+
   - Optional Enhancements
-    1. Power-ups: rapid fire, shield, bomb drop.
-    2. Network multiplayer using LibGDX networking (players on separate computers).
-    3. Boss enemy at the end of each level.
+    1. Two-player co-op (shared screen, different keys).
+    2. Power-ups: rapid fire or shield.
+    3. Save/load game progress to a file.
+
 
 ## LibGDX
 
