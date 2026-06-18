@@ -1,6 +1,6 @@
 # space-invaders-java
 
-#### This project is as an activity of the Object Oriented Programming (SCC0504-101-2026) subject on the Instituto de Ciências Matemáticas e de Computação from the Universidade de São Paulo (USP). The main goal is to recriate the known "Alien invaders" using Java and LibGDX.
+#### This project is as an activity of the Object Oriented Programming (SCC0504-101-2026) subject on the Instituto de Ciências Matemáticas e de Computação from the Universidade de São Paulo (USP). The main goal is to recriate the known "Space invaders" using Java and LibGDX.
 
 ## Developers:
 <div style="display:inline-block; padding:1rem;">
