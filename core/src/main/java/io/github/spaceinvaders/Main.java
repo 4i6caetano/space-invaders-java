@@ -5,6 +5,7 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.utils.viewport.FitViewport;
+import com.badlogic.gdx.Gdx;
 
 /** {@link com.badlogic.gdx.ApplicationListener} implementation shared by all platforms. */
 public class Main extends Game {
@@ -28,11 +29,11 @@ public class Main extends Game {
     {
         setScreen(new FirstScreen());
 
-        viewport = new FitViewport(viewport.getWorldWidth(), viewport.getWorldHeight());
+        viewport = new FitViewport(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());;
 
         spriteBatch = new SpriteBatch();
 
-        backgroundImage = new Texture("sprites/backgroundTexture");
+        backgroundImage = new Texture("background/backgroundTexture.png");
 
         Texture alien1Texture1 = new Texture("sprites/alien1Instance1.png");
         alien1Instance1 = new Sprite(alien1Texture1);
