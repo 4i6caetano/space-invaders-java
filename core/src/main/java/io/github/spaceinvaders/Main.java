@@ -1,6 +1,7 @@
 package io.github.spaceinvaders;
 
 import com.badlogic.gdx.Game;
+import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
@@ -73,6 +74,7 @@ public class Main extends Game {
 
     public void render()
     {
+        input();
         draw();
     }
 
@@ -92,6 +94,22 @@ public class Main extends Game {
     }
 
     // these live inside the 'render' method.
+
+    private void input()
+    {
+        float speed = 70f;
+        float delta = Gdx.graphics.getDeltaTime();
+
+        if(Gdx.input.isKeyPressed(Input.Keys.A))
+        {
+            playerSprite.translateX(-speed * delta);
+        }
+
+        if(Gdx.input.isKeyPressed(Input.Keys.D))
+        {
+            playerSprite.translateX( speed * delta);
+        }
+    }
 
     private void draw()
     {
