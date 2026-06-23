@@ -8,6 +8,7 @@ import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.utils.ScreenUtils;
 
 import io.github.spaceinvaders.entities.*;
@@ -25,9 +26,17 @@ public class GameScreen implements Screen {
 
     private final int NUM_COLUMNS = 8;
     private final int NUM_LINES = 6;
+    private final int TOTAL_NUMBER_OF_ALIENS = NUM_COLUMNS * NUM_LINES;
 
     private Entity player;
     private float playerSpeed;
+
+    private PlayerBullet playerBullet;
+    private final Texture bulletTexture;
+
+    private Alien explosion;
+    private final Texture explosionTexture;
+    private final Texture explosionTexture2;
 
     private Alien aliens[];
     private int direction = 1;
@@ -44,6 +53,10 @@ public class GameScreen implements Screen {
 
         this.WORLD_WIDTH = game.viewport.getWorldWidth();
         this.WORLD_HEIGHT = game.viewport.getWorldHeight();
+
+        this.bulletTexture = new Texture("sprites/playerBullet.png");
+        this.explosionTexture = new Texture("sprites/explosion.png");
+        this.explosionTexture2 = new Texture("sprites/explosion2.png");
 
         float ENTITY_WIDTH = WORLD_WIDTH / (NUM_COLUMNS + 2);
         float ENTITY_HEIGHT = ENTITY_WIDTH / 2;
@@ -68,7 +81,7 @@ public class GameScreen implements Screen {
         Texture alien3 = new Texture("sprites/alien3Instance1.png");
         Texture alien3Texture2 = new Texture("sprites/alien3Instance2.png");
 
-        this.aliens = new Alien[NUM_COLUMNS * NUM_LINES];
+        this.aliens = new Alien[TOTAL_NUMBER_OF_ALIENS];
 
         int linesPerAlienType = MathUtils.floor(NUM_LINES / 3);
         for (int i = 0; i < NUM_LINES; i++) {
@@ -103,30 +116,6 @@ public class GameScreen implements Screen {
         playerSpeed = ENTITY_WIDTH;
     }
 
-    @Override
-    public void show() {
-        backgroundMusic = Gdx.audio.newMusic(Gdx.files.internal("Spacing around.mp3"));
-        backgroundMusic.setLooping(true);
-        backgroundMusic.setVolume(0.5f);
-        backgroundMusic.play();
-
-        shootingSFX = Gdx.audio.newSound(Gdx.files.internal("effects/SfxLazer.ogg"));
-        explosionSFX = Gdx.audio.newSound(Gdx.files.internal("effects/SfxExplosion.ogg"));
-    }
-
-    @Override
-    public void render(float delta) {
-        input(delta);
-        if (this.frameCount % 20 == 0) {
-            updateAliens(delta);
-            this.frameCount = 0;
-        }
-        draw();
-        logic();
-
-        this.frameCount++;
-    }
-
     private void updateAliens(float delta) {
         boolean hitTheBorder = false;
 
@@ -135,7 +124,7 @@ public class GameScreen implements Screen {
         for (Entity alien : aliens) {
             if (alien == null) continue;
 
-            alien.move(deltaX, 0);
+            alien.translate(deltaX, 0);
 
             if ((direction == 1 && alien.getX() + alien.getWidth() >= WORLD_WIDTH) || (direction == -1 && alien.getX() <= 0)) {
                 hitTheBorder = true;
@@ -149,7 +138,10 @@ public class GameScreen implements Screen {
                 if (alien == null) continue;
 
                 if (alien.getY() - DROP_AMOUNT > LIMIT_Y) {
-                    alien.move(0, -DROP_AMOUNT);
+                    alien.translate(0, -DROP_AMOUNT);
+                }
+                else {
+                    // player perdeu porque os aliens chegaram no final
                 }
             }
         }
@@ -161,10 +153,69 @@ public class GameScreen implements Screen {
         game.viewport.update(width, height, true);
     }
 
-    @Override
-    public void pause() {
-        if (backgroundMusic != null && backgroundMusic.isPlaying()) {
-            backgroundMusic.pause();
+    private void input(float delta) {
+        if (Gdx.input.isKeyPressed(Input.Keys.A) || Gdx.input.isKeyPressed(Input.Keys.LEFT)) {
+            game.player.translate(-playerSpeed * delta, 0);
+        }
+
+        if (Gdx.input.isKeyPressed(Input.Keys.D) || Gdx.input.isKeyPressed(Input.Keys.RIGHT)) {
+            game.player.translate(playerSpeed * delta, 0);
+        }
+
+        if (Gdx.input.isButtonPressed(Input.Buttons.LEFT))
+        {
+            if(playerBullet == null)
+            {
+                float bulletX = game.player.getX() + (game.player.getWidth() / 2f) - (bulletTexture.getWidth() / 2f);
+                float bulletY = game.player.getY() + game.player.getHeight();
+                playerBullet = new PlayerBullet(game.spriteBatch, bulletTexture, bulletX, bulletY);
+
+                shootingSFX.play();
+            }
+        }
+    }
+
+    private void logic(float delta) {
+        float currentX = game.player.getX();
+        float clampedX = MathUtils.clamp(currentX, 0, WORLD_WIDTH - player.getWidth());
+        if (currentX != clampedX) {
+            game.player.move(clampedX, game.player.getY());
+        }
+
+        if(playerBullet != null)
+        {
+            playerBullet.update(delta);
+
+            for(int i = 0; i < TOTAL_NUMBER_OF_ALIENS; i++)
+            {
+                if(aliens[i] != null){
+                    float alienRightBorder = aliens[i].getX() + aliens[i].getWidth();
+                    float alienHeightBorder = aliens[i].getY() + aliens[i].getHeight();
+
+                    float bulletRightBorder = playerBullet.getX() + playerBullet.getWidth();
+                    float bulletHeightBorder = playerBullet.getY() + playerBullet.getHeight();
+
+                    // Quando a bala acerta um alien
+                    if(bulletRightBorder > aliens[i].getX() && playerBullet.getX() < alienRightBorder && playerBullet.getY() < alienHeightBorder && bulletHeightBorder > aliens[i].getY())
+                    {
+                        this.explosion = new Alien(game.spriteBatch, explosionTexture, explosionTexture2, aliens[i].getX() + aliens[i].getHeight() / 2, aliens[i].getY(), aliens[i].getHeight(), aliens[i].getHeight());
+                        aliens[i] = null;
+                        explosionSFX.play();
+
+                        playerBullet = null;
+
+                        game.totalPoints += 100;
+                        this.alienSpeed += 20;
+
+                        break;
+                    }
+                }
+            }
+
+            if(playerBullet != null && playerBullet.isOutOfBounds(WORLD_HEIGHT))
+            {
+                playerBullet = null;
+            }
         }
     }
 
@@ -183,6 +234,11 @@ public class GameScreen implements Screen {
     }
 
     @Override
+    public void pause() {
+
+    }
+
+    @Override
     public void dispose() {
         if (backgroundMusic != null) {
             backgroundMusic.dispose();
@@ -197,30 +253,6 @@ public class GameScreen implements Screen {
         }
     }
 
-    private void input(float delta)
-    {
-        if(Gdx.input.isKeyPressed(Input.Keys.A) || Gdx.input.isKeyPressed(Input.Keys.LEFT))
-        {
-            game.playerSprite.translateX(-playerSpeed * delta);
-        }
-
-        if(Gdx.input.isKeyPressed(Input.Keys.D) || Gdx.input.isKeyPressed(Input.Keys.RIGHT))
-        {
-            game.playerSprite.translateX(playerSpeed * delta);
-        }
-
-        if(Gdx.input.isButtonJustPressed(Input.Buttons.LEFT))
-        {
-            shootingSFX.play();
-        }
-
-        if (Gdx.input.isKeyJustPressed(Input.Keys.K)) {
-            this.aliens[MathUtils.random(0, NUM_COLUMNS * NUM_LINES - 1)] = null;
-            game.totalPoints += 100;
-            explosionSFX.play();
-        }
-    }
-
     private void draw()
     {
         ScreenUtils.clear(Color.BLACK);
@@ -229,7 +261,12 @@ public class GameScreen implements Screen {
         game.spriteBatch.begin();
 
         game.spriteBatch.draw(game.backgroundTexture, 0, 0, WORLD_WIDTH, WORLD_HEIGHT);
-        game.playerSprite.draw(game.spriteBatch);
+        game.player.draw();
+
+        if(playerBullet != null)
+        {
+            playerBullet.draw();
+        }
 
         for (int i = 0; i < NUM_COLUMNS * NUM_LINES; i++) {
             if (aliens[i] != null) { // Evita erro se o alien morrer
@@ -237,11 +274,39 @@ public class GameScreen implements Screen {
             }
         }
 
+        if (explosion != null) {
+        explosion.draw();
+        }
+
         game.spriteBatch.end();
     }
 
-    private void logic()
-    {
-        game.playerSprite.setX(MathUtils.clamp(game.playerSprite.getX(), 0, WORLD_WIDTH - player.getWidth()));
+    @Override
+    public void show() {
+        backgroundMusic = Gdx.audio.newMusic(Gdx.files.internal("Spacing around.mp3"));
+        backgroundMusic.setLooping(true);
+        backgroundMusic.setVolume(0.5f);
+        backgroundMusic.play();
+
+        shootingSFX = Gdx.audio.newSound(Gdx.files.internal("effects/SfxLazer.ogg"));
+        explosionSFX = Gdx.audio.newSound(Gdx.files.internal("effects/SfxExplosion.ogg"));
+    }
+
+    @Override
+    public void render(float delta) {
+        input(delta);
+
+        if (this.frameCount % 10 == 0 && this.explosion != null) {
+            this.explosion.changeTexture();
+        }
+        else if (this.frameCount % 15 == 0) {
+            updateAliens(delta);
+            this.explosion = null;
+            this.frameCount = 0;
+        }
+        draw();
+        logic(delta);
+
+        this.frameCount++;
     }
 }
