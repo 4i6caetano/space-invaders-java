@@ -5,7 +5,7 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 
 public class PlayerBullet extends Entity {
 
-    private final float speed = 100f;
+    private final float speed = 300f;
 
     public PlayerBullet(SpriteBatch batch, Texture texture, float x, float y)
     {

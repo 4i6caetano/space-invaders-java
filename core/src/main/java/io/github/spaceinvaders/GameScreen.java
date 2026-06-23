@@ -29,6 +29,7 @@ public class GameScreen implements Screen {
 
     private final int NUM_COLUMNS = 8;
     private final int NUM_LINES = 6;
+    private final int TOTAL_NUMBER_OF_ALIENS = NUM_COLUMNS * NUM_LINES;
 
     private Entity player;
     private float playerSpeed;
@@ -76,7 +77,7 @@ public class GameScreen implements Screen {
         Texture alien3 = new Texture("sprites/alien3Instance1.png");
         Texture alien3Texture2 = new Texture("sprites/alien3Instance2.png");
 
-        this.aliens = new Alien[NUM_COLUMNS * NUM_LINES];
+        this.aliens = new Alien[TOTAL_NUMBER_OF_ALIENS];
 
         int linesPerAlienType = MathUtils.floor(NUM_LINES / 3);
         for (int i = 0; i < NUM_LINES; i++) {
@@ -200,7 +201,34 @@ public class GameScreen implements Screen {
         {
             playerBullet.update(delta);
 
-            if(playerBullet.isOutOfBounds(WORLD_HEIGHT))
+            for(int i = 0; i < TOTAL_NUMBER_OF_ALIENS; i++)
+            {
+                if(aliens[i] != null){
+                    float specificAlienX = aliens[i].getX();
+                    float specificAlienY = aliens[i].getY();
+                    float specificAlienWidth = aliens[i].getWidth();
+                    float specificAlienHeight = aliens[i].getHeight();
+                    float alienRightBorder = specificAlienX + specificAlienWidth;
+                    float alienHeightBorder = specificAlienY + specificAlienHeight;
+
+                    float bulletX = playerBullet.getX();
+                    float bulletY = playerBullet.getY();
+                    float bulletWidth = playerBullet.getWidth();
+                    float bulletHeight = playerBullet.getHeight();
+                    float bulletRightBorder = bulletX + bulletWidth;
+                    float bulletHeightBorder = bulletY + bulletHeight;
+
+                    if(bulletRightBorder > specificAlienX && bulletX < alienRightBorder && bulletY < alienHeightBorder && bulletHeightBorder > specificAlienY )
+                    {
+                        aliens[i] = null;
+                        playerBullet = null;
+
+                        break;
+                    }
+                }
+            }
+
+            if(playerBullet != null && playerBullet.isOutOfBounds(WORLD_HEIGHT))
             {
                 playerBullet = null;
             }
