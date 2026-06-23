@@ -32,8 +32,6 @@ public class Main extends Game {
 
         spriteBatch = new SpriteBatch();
 
-        backgroundTexture = new Texture("background/backgroundTexture.png");
-
         // 1. Inicializa a Skin vazia
         skin = new Skin();
 
@@ -71,7 +69,6 @@ public class Main extends Game {
     public void dispose()
     {
         spriteBatch.dispose();
-        backgroundTexture.dispose();
         skin.dispose();
     }
 }

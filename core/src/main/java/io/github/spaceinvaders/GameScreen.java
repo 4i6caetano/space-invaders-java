@@ -11,6 +11,7 @@ import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 
@@ -45,6 +46,7 @@ public class GameScreen implements Screen {
     private Alien explosion;
     private final Texture explosionTexture;
     private final Texture explosionTexture2;
+    private final Texture alientBulletTexture;
 
     private Alien aliens[];
     private int direction = 1;
@@ -56,6 +58,11 @@ public class GameScreen implements Screen {
     private float alienShootTimer = 0f;
     private final float ALIEN_SHOOT_INTERVAL = 1.5f;
 
+    private com.badlogic.gdx.utils.FloatArray estrelasX;
+    private com.badlogic.gdx.utils.FloatArray estrelasY;
+    private final int QTD_ESTRELAS = 50;
+    private BitmapFont font;
+
     private int frameCount;
 
     private boolean playerLose = false;
@@ -63,12 +70,15 @@ public class GameScreen implements Screen {
     public GameScreen(Main game)
     {
         this.game = game;
+        this.font = game.skin.getFont("default");
+
         this.frameCount = 0;
 
         this.WORLD_WIDTH = game.viewport.getWorldWidth();
         this.WORLD_HEIGHT = game.viewport.getWorldHeight();
 
         this.bulletTexture = new Texture("sprites/playerBullet.png");
+        this.alientBulletTexture = new Texture("sprites/alienBullet.png");
         this.explosionTexture = new Texture("sprites/explosion.png");
         this.explosionTexture2 = new Texture("sprites/explosion2.png");
 
@@ -85,6 +95,13 @@ public class GameScreen implements Screen {
             this.alienSpeed = ENTITY_WIDTH * 8;
         }
 
+        estrelasX = new com.badlogic.gdx.utils.FloatArray();
+        estrelasY = new com.badlogic.gdx.utils.FloatArray();
+
+        for (int i = 0; i < QTD_ESTRELAS; i++) {
+            estrelasX.add(com.badlogic.gdx.math.MathUtils.random(0, Gdx.graphics.getWidth()));
+            estrelasY.add(com.badlogic.gdx.math.MathUtils.random(0, Gdx.graphics.getHeight()));
+        }
 
         Texture alien1 = new Texture("sprites/alien1Instance1.png");
         Texture alien1Texture2 = new Texture("sprites/alien1Instance2.png");
@@ -287,11 +304,11 @@ public class GameScreen implements Screen {
             int randomIdx = aliveAliens.get(MathUtils.random(0, aliveAliens.size - 1));
             Alien shooter = aliens[randomIdx];
             
-            float bulletX = shooter.getX() + (shooter.getWidth() / 2f) - (bulletTexture.getWidth() / 2f);
+            float bulletX = shooter.getX() + (shooter.getWidth() / 2f) - (alientBulletTexture.getWidth() / 2f);
             float bulletY = shooter.getY();
             
             // Reutiliza o PlayerBullet, mas vamos inverter a velocidade dele na lógica
-            PlayerBullet alienBullet = new PlayerBullet(game.spriteBatch, bulletTexture, bulletX, bulletY);
+            PlayerBullet alienBullet = new PlayerBullet(game.spriteBatch, alientBulletTexture, bulletX, bulletY);
             alienBullets.add(alienBullet);
             
             if (shootingSFX != null) shootingSFX.play();
@@ -329,13 +346,28 @@ public class GameScreen implements Screen {
         stage.addActor(table);
     }
 
-    private void draw() {
+    private void draw(float delta) {
         ScreenUtils.clear(Color.BLACK);
         game.viewport.apply();
         game.spriteBatch.setProjectionMatrix(game.viewport.getCamera().combined);
         game.spriteBatch.begin();
 
-        game.spriteBatch.draw(game.backgroundTexture, 0, 0, WORLD_WIDTH, WORLD_HEIGHT);
+        font.setColor(com.badlogic.gdx.graphics.Color.WHITE);
+        for (int i = 0; i < QTD_ESTRELAS; i++) {
+            //isso que vai fazer a magica das volinhas passarem, pois ele vai fornecer a altura e veloidade corretas
+
+            float x = estrelasX.get(i) - (300 * delta);
+            //o efeito de "passar" é por causa dessa subtração ai
+            if (x < 0) {
+                x = Gdx.graphics.getWidth();
+                //a posição y e x vão ser aleatórias para cada bolinha
+                estrelasY.set(i, com.badlogic.gdx.math.MathUtils.random(0, Gdx.graphics.getHeight()));
+            }
+            estrelasX.set(i, x);
+            //desenhando a bolinha usando as posições aleatórias
+            font.draw(game.spriteBatch, ".", estrelasX.get(i), estrelasY.get(i));
+        }
+
         player.draw();
 
         if(playerBullet != null) {
@@ -390,7 +422,7 @@ public class GameScreen implements Screen {
             alienShoot();
         }
 
-        draw();
+        draw(delta);
         bulletCollisionlogic(delta);
         stage.act(delta);
 
