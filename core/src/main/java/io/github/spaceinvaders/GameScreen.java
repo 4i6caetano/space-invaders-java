@@ -3,6 +3,8 @@ package io.github.spaceinvaders;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.Screen;
+import com.badlogic.gdx.audio.Music;
+import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.graphics.Texture;
@@ -13,6 +15,10 @@ import io.github.spaceinvaders.entities.*;
 /** First screen of the application. Displayed after the application is created. */
 public class GameScreen implements Screen {
     private final Main game;
+
+    private Music backgroundMusic;
+    private Sound shootingSFX;
+    private Sound explosionSFX;
 
     private final float WORLD_WIDTH;
     private final float WORLD_HEIGHT;
@@ -66,7 +72,6 @@ public class GameScreen implements Screen {
 
         int linesPerAlienType = MathUtils.floor(NUM_LINES / 3);
         for (int i = 0; i < NUM_LINES; i++) {
-            if (i == 1) continue;
 
             Texture currentTexture;
             Texture alternateTexture;
@@ -89,8 +94,6 @@ public class GameScreen implements Screen {
             for (int j = 0; j < NUM_COLUMNS; j++) {
                 int index = i * NUM_COLUMNS + j;
 
-                if (j == 4) continue;
-
                 aliens[index] = new Alien(game.spriteBatch, currentTexture, alternateTexture, ENTITY_WIDTH * j, y, ENTITY_WIDTH, ENTITY_HEIGHT);
             }
         }
@@ -102,6 +105,13 @@ public class GameScreen implements Screen {
 
     @Override
     public void show() {
+        backgroundMusic = Gdx.audio.newMusic(Gdx.files.internal("Spacing around.mp3"));
+        backgroundMusic.setLooping(true);
+        backgroundMusic.setVolume(0.5f);
+        backgroundMusic.play();
+
+        shootingSFX = Gdx.audio.newSound(Gdx.files.internal("effects/SfxLazer.ogg"));
+        explosionSFX = Gdx.audio.newSound(Gdx.files.internal("effects/SfxExplosion.ogg"));
     }
 
     @Override
@@ -118,34 +128,27 @@ public class GameScreen implements Screen {
     }
 
     private void updateAliens(float delta) {
-        boolean bateramNaBorda = false;
+        boolean hitTheBorder = false;
 
-        // 1. Calcula quanto eles devem andar NESSE frame
-        float deslocamentoX = alienSpeed * direction * delta;
+        float deltaX = alienSpeed * direction * delta;
 
-        // 2. Aplica o translate horizontal e checa as bordas
         for (Entity alien : aliens) {
             if (alien == null) continue;
 
-            // Move apenas o delta desse frame
-            alien.move(deslocamentoX, 0); 
+            alien.move(deltaX, 0);
 
-            // Checa a borda usando o getX() atualizado do seu alien
             if ((direction == 1 && alien.getX() + alien.getWidth() >= WORLD_WIDTH) || (direction == -1 && alien.getX() <= 0)) {
-                bateramNaBorda = true;
+                hitTheBorder = true;
             }
         }
 
-        // 3. Se bateram na borda, inverte a direção e dá um translate para baixo
-        if (bateramNaBorda) {
-            direction *= -1; // Inverte o sentido
+        if (hitTheBorder) {
+            direction *= -1;
 
             for (Entity alien : aliens) {
                 if (alien == null) continue;
 
-                // Só desce se não estiver abaixo do limite do jogo
                 if (alien.getY() - DROP_AMOUNT > LIMIT_Y) {
-                    // translate: anda 0 no X e -DROP_AMOUNT no Y (para baixo)
                     alien.move(0, -DROP_AMOUNT);
                 }
             }
@@ -159,17 +162,39 @@ public class GameScreen implements Screen {
     }
 
     @Override
-    public void pause() {}
+    public void pause() {
+        if (backgroundMusic != null && backgroundMusic.isPlaying()) {
+            backgroundMusic.pause();
+        }
+    }
 
     @Override
-    public void resume() {}
+    public void resume() {
+        if (backgroundMusic != null && !backgroundMusic.isPlaying()) {
+            backgroundMusic.play();
+        }
+    }
 
     @Override
-    public void hide() {}
+    public void hide() {
+        if (backgroundMusic != null) {
+            backgroundMusic.stop();
+        }
+    }
 
     @Override
     public void dispose() {
-        // Lembre-se de dar dispose nas texturas aqui se necessário!
+        if (backgroundMusic != null) {
+            backgroundMusic.dispose();
+        }
+
+        if (shootingSFX != null) {
+            shootingSFX.dispose();
+        }
+
+        if (explosionSFX != null) {
+            explosionSFX.dispose();
+        }
     }
 
     private void input(float delta)
@@ -186,7 +211,13 @@ public class GameScreen implements Screen {
 
         if(Gdx.input.isButtonJustPressed(Input.Buttons.LEFT))
         {
+            shootingSFX.play();
+        }
 
+        if (Gdx.input.isKeyJustPressed(Input.Keys.K)) {
+            this.aliens[MathUtils.random(0, NUM_COLUMNS * NUM_LINES - 1)] = null;
+            game.totalPoints += 100;
+            explosionSFX.play();
         }
     }
 
