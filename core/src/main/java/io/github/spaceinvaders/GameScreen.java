@@ -5,7 +5,10 @@ import com.badlogic.gdx.Input;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.math.MathUtils;
+import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.utils.ScreenUtils;
+
+import io.github.spaceinvaders.entities.*;
 
 /** First screen of the application. Displayed after the application is created. */
 public class GameScreen implements Screen {
@@ -20,10 +23,17 @@ public class GameScreen implements Screen {
     private final float playerWidth;
     private final float playerHeight;
 
+    private final int NUM_COLUMNS = 8;
+    private final int NUM_LINES = 3;
+    private final int ALIEN_WIDTH = 30;
+    private final int ALIENT_HEIGHT = 20;
+
+    private Entity aliens[];
 
     public GameScreen(Main game)
     {
         this.game = game;
+        this.aliens = new Entity[NUM_COLUMNS * NUM_LINES];
 
         float baseSpeed = 30f;
 
@@ -39,6 +49,31 @@ public class GameScreen implements Screen {
         else
         {
             this.alienSpeed = baseSpeed * 2;
+        }
+
+        for (int i = 0; i < NUM_LINES; i++) {
+            for (int j = 0; j < NUM_COLUMNS; j++) {
+                Texture currentTexture;
+                float y = game.viewport.getWorldHeight();
+
+                if (i % 3 == 0) {
+                    currentTexture = new Texture("sprites/alien1Instance1.png");
+                    y -= ALIENT_HEIGHT;
+                }
+                else if (i % 3 == 1) {
+                    currentTexture = new Texture("sprites/alien2Instance1.png");
+                    y -= ALIENT_HEIGHT * 2;
+                }
+                else {
+                    currentTexture = new Texture("sprites/alien3Instance1.png");
+                    y -= ALIENT_HEIGHT * 3;
+                }
+
+                int index = i * NUM_COLUMNS + j;
+
+                aliens[index] = new Entity(game.spriteBatch, currentTexture, ALIEN_WIDTH, ALIENT_HEIGHT);
+                aliens[index].move(ALIEN_WIDTH * j, y);
+            }
         }
     }
 
@@ -96,6 +131,11 @@ public class GameScreen implements Screen {
         {
             game.playerSprite.translateX( speed * delta);
         }
+
+        if(Gdx.input.isButtonJustPressed(Input.Buttons.LEFT))
+        {
+
+        }
         // PLAYER SHOOTS
     }
 
@@ -108,6 +148,10 @@ public class GameScreen implements Screen {
 
         game.spriteBatch.draw(game.backgroundTexture, 0, 0, worldWidth, worldHeight);
         game.playerSprite.draw(game.spriteBatch);
+
+        for (int i = 0; i < NUM_COLUMNS * NUM_LINES; i++) {
+            aliens[i].draw();
+        }
 
         game.spriteBatch.end();
     }
