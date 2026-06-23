@@ -37,6 +37,8 @@ public class GameScreen implements Screen {
 
     private int frameCount;
 
+    private Entity playerBullet;
+
     public GameScreen(Main game)
     {
         this.game = game;
@@ -201,23 +203,12 @@ public class GameScreen implements Screen {
     {
         if(Gdx.input.isKeyPressed(Input.Keys.A) || Gdx.input.isKeyPressed(Input.Keys.LEFT))
         {
-            game.playerSprite.translateX(-playerSpeed * delta);
+            game.player.translate(-playerSpeed * delta, 0);
         }
 
         if(Gdx.input.isKeyPressed(Input.Keys.D) || Gdx.input.isKeyPressed(Input.Keys.RIGHT))
         {
-            game.playerSprite.translateX(playerSpeed * delta);
-        }
-
-        if(Gdx.input.isButtonJustPressed(Input.Buttons.LEFT))
-        {
-            shootingSFX.play();
-        }
-
-        if (Gdx.input.isKeyJustPressed(Input.Keys.K)) {
-            this.aliens[MathUtils.random(0, NUM_COLUMNS * NUM_LINES - 1)] = null;
-            game.totalPoints += 100;
-            explosionSFX.play();
+            game.player.translate(playerSpeed * delta, 0);
         }
     }
 
@@ -229,7 +220,7 @@ public class GameScreen implements Screen {
         game.spriteBatch.begin();
 
         game.spriteBatch.draw(game.backgroundTexture, 0, 0, WORLD_WIDTH, WORLD_HEIGHT);
-        game.playerSprite.draw(game.spriteBatch);
+        game.player.draw();
 
         for (int i = 0; i < NUM_COLUMNS * NUM_LINES; i++) {
             if (aliens[i] != null) { // Evita erro se o alien morrer
@@ -242,6 +233,6 @@ public class GameScreen implements Screen {
 
     private void logic()
     {
-        game.playerSprite.setX(MathUtils.clamp(game.playerSprite.getX(), 0, WORLD_WIDTH - player.getWidth()));
+        game.player.move(MathUtils.clamp(game.player.getX(), 0, WORLD_WIDTH - player.getWidth()), 0);
     }
 }

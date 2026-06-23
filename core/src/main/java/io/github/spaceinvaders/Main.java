@@ -6,6 +6,7 @@ import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.Gdx;
+import io.github.spaceinvaders.entities.*;
 
 /** {@link com.badlogic.gdx.ApplicationListener} implementation shared by all platforms. */
 public class Main extends Game {
@@ -26,7 +27,7 @@ public class Main extends Game {
     Sprite alien3Instance1;
     Sprite alien3Instance2;
 
-    Sprite playerSprite;
+    Entity player;
 
     @Override
     public void create()
@@ -39,12 +40,11 @@ public class Main extends Game {
         backgroundTexture = new Texture("background/backgroundTexture.png");
 
         Texture playerTexture = new Texture("sprites/playerSprite.png");
-        playerSprite = new Sprite(playerTexture);
+        player = new Entity(spriteBatch, playerTexture, 60, 40);
 
         // Resizes and adjustments on sprites
 
-        playerSprite.setSize(60, 40);
-        playerSprite.setPosition(1, 1);
+        player.move(viewport.getWorldWidth() / 2f, 50f);
 
         setScreen(new GameScreen(this));
     }

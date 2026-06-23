@@ -40,8 +40,12 @@ public class Entity {
         return this.entitySprite.getHeight();
     }
 
-    public void move(float xAmount, float yAmount) {
-        this.entitySprite.translate(xAmount, yAmount);
+    public void move(float x, float y) {
+        this.entitySprite.setPosition(x, y);
+    }
+
+    public void translate(float x, float y) {
+        this.entitySprite.translate(x, y);
     }
 
     public void draw() {
