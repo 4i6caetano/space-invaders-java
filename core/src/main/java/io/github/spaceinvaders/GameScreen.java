@@ -33,6 +33,7 @@ public class GameScreen implements Screen {
     private Entity player;
     private float playerSpeed;
 
+    private PlayerBullet playerBullet;
     private Alien aliens[];
     private int direction = 1;
     private final float DROP_AMOUNT;
@@ -40,8 +41,6 @@ public class GameScreen implements Screen {
     private float alienSpeed;
 
     private int frameCount;
-
-    private Entity playerBullet;
 
     public GameScreen(Main game)
     {
@@ -131,7 +130,7 @@ public class GameScreen implements Screen {
             this.frameCount = 0;
         }
         draw();
-        logic();
+        logic(delta);
 
         this.frameCount++;
     }
@@ -190,6 +189,24 @@ public class GameScreen implements Screen {
         }
     }
 
+    private void logic(float delta) {
+        float currentX = game.player.getX();
+        float clampedX = MathUtils.clamp(currentX, 0, WORLD_WIDTH - player.getWidth());
+        if (currentX != clampedX) {
+            game.player.move(clampedX, game.player.getY());
+        }
+
+        if(playerBullet != null)
+        {
+            playerBullet.update(delta);
+
+            if(playerBullet.isOutOfBounds(WORLD_HEIGHT))
+            {
+                playerBullet = null;
+            }
+        }
+    }
+
     @Override
     public void resume() {
         if (backgroundMusic != null && !backgroundMusic.isPlaying()) {
@@ -234,6 +251,11 @@ public class GameScreen implements Screen {
         game.spriteBatch.draw(game.backgroundTexture, 0, 0, WORLD_WIDTH, WORLD_HEIGHT);
         game.player.draw();
 
+        if(playerBullet != null)
+        {
+            playerBullet.draw();
+        }
+
         for (int i = 0; i < NUM_COLUMNS * NUM_LINES; i++) {
             if (aliens[i] != null) { // Evita erro se o alien morrer
                 aliens[i].draw();
@@ -241,10 +263,5 @@ public class GameScreen implements Screen {
         }
 
         game.spriteBatch.end();
-    }
-
-    private void logic()
-    {
-        game.player.move(MathUtils.clamp(game.player.getX(), 0, WORLD_WIDTH - player.getWidth()), 0);
     }
 }
