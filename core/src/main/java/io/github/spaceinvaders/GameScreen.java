@@ -14,55 +14,12 @@ public class GameScreen implements Screen {
 
     private boolean movingLeft;
     private boolean movingRight;
+    private boolean clickingLeft;
+    private boolean clickingRight;
 
     public GameScreen(Main game)
     {
         this.game = game;
-        Gdx.input.setInputProcessor(new InputAdapter() {
-
-            @Override
-            public boolean keyDown (int keycode) {
-                switch (keycode)
-                {
-                    case Input.Keys.LEFT:
-                    case Input.Keys.A:
-                        movingLeft = true;
-                        break;
-
-                    case Input.Keys.RIGHT:
-                    case Input.Keys.D:
-                        movingRight = true;
-                        break;
-                }
-                return false;
-            }
-
-            @Override
-            public boolean keyUp (int keycode) {
-                switch (keycode)
-                {
-                    case Input.Keys.LEFT:
-                    case Input.Keys.A:
-                        movingLeft = false;
-                        break;
-                    case Input.Keys.RIGHT:
-                    case Input.Keys.D:
-                        movingRight = false;
-                        break;
-                }
-                return false;
-            }
-
-            @Override
-            public boolean touchDown (int x, int y, int pointer, int button) {
-                return false;
-            }
-
-            @Override
-            public boolean touchUp (int x, int y, int pointer, int button) {
-                return false;
-            }
-        });
 
     }
 
@@ -73,7 +30,7 @@ public class GameScreen implements Screen {
 
     @Override
     public void render(float delta) {
-        input();
+        input(delta);
         draw();
     }
 
@@ -107,19 +64,22 @@ public class GameScreen implements Screen {
         // Destroy screen's assets here.
     }
 
-    private void input()
+    private void input(float delta)
     {
         float speed = 70f;
-        float delta = Gdx.graphics.getDeltaTime();
-
-        if(movingLeft)
+        if(Gdx.input.isKeyPressed(Input.Keys.A) || Gdx.input.isKeyJustPressed(Input.Keys.LEFT))
         {
             game.playerSprite.translateX(-speed * delta);
         }
 
-        if(movingRight)
+        if(Gdx.input.isKeyPressed(Input.Keys.D) || Gdx.input.isKeyJustPressed(Input.Keys.RIGHT))
         {
             game.playerSprite.translateX( speed * delta);
+        }
+
+        if(Gdx.input.isButtonJustPressed(Input.Buttons.LEFT))
+        {
+a
         }
         // PLAYER SHOOTS
     }
