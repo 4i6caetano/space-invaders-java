@@ -2,9 +2,9 @@ package io.github.spaceinvaders;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
-import com.badlogic.gdx.InputAdapter;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.utils.ScreenUtils;
 
 /** First screen of the application. Displayed after the application is created. */
@@ -12,15 +12,34 @@ public class GameScreen implements Screen {
 
     private final Main game;
 
-    private boolean movingLeft;
-    private boolean movingRight;
-    private boolean clickingLeft;
-    private boolean clickingRight;
+    private float alienSpeed;
+
+    private final float worldWidth;
+    private final float worldHeight;
+
+    private final float playerWidth;
+    private final float playerHeight;
+
 
     public GameScreen(Main game)
     {
         this.game = game;
 
+        float baseSpeed = 30f;
+
+        this.worldWidth = game.viewport.getWorldWidth();
+        this.worldHeight = game.viewport.getWorldHeight();
+        this.playerWidth = game.playerSprite.getWidth();
+        this.playerHeight = game.playerSprite.getWidth();
+
+        if(game.currentLevel == 1)
+        {
+            this.alienSpeed = baseSpeed;
+        }
+        else
+        {
+            this.alienSpeed = baseSpeed * 2;
+        }
     }
 
     @Override
@@ -32,6 +51,7 @@ public class GameScreen implements Screen {
     public void render(float delta) {
         input(delta);
         draw();
+        logic();
     }
 
     @Override
@@ -67,19 +87,14 @@ public class GameScreen implements Screen {
     private void input(float delta)
     {
         float speed = 70f;
-        if(Gdx.input.isKeyPressed(Input.Keys.A) || Gdx.input.isKeyJustPressed(Input.Keys.LEFT))
+        if(Gdx.input.isKeyPressed(Input.Keys.A) || Gdx.input.isKeyPressed(Input.Keys.LEFT))
         {
             game.playerSprite.translateX(-speed * delta);
         }
 
-        if(Gdx.input.isKeyPressed(Input.Keys.D) || Gdx.input.isKeyJustPressed(Input.Keys.RIGHT))
+        if(Gdx.input.isKeyPressed(Input.Keys.D) || Gdx.input.isKeyPressed(Input.Keys.RIGHT))
         {
             game.playerSprite.translateX( speed * delta);
-        }
-
-        if(Gdx.input.isButtonJustPressed(Input.Buttons.LEFT))
-        {
-a
         }
         // PLAYER SHOOTS
     }
@@ -91,12 +106,14 @@ a
         game.spriteBatch.setProjectionMatrix(game.viewport.getCamera().combined);
         game.spriteBatch.begin();
 
-        float worldWidth = game.viewport.getWorldWidth();
-        float worldHeight = game.viewport.getWorldHeight();
-
         game.spriteBatch.draw(game.backgroundTexture, 0, 0, worldWidth, worldHeight);
         game.playerSprite.draw(game.spriteBatch);
 
         game.spriteBatch.end();
+    }
+
+    private void logic()
+    {
+        game.playerSprite.setX(MathUtils.clamp(game.playerSprite.getX(), 0, worldWidth - playerWidth));
     }
 }
