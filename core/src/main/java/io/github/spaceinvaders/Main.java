@@ -1,55 +1,63 @@
 package io.github.spaceinvaders;
 
 import com.badlogic.gdx.Game;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.graphics.g2d.Sprite;
+import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator;
+import com.badlogic.gdx.scenes.scene2d.ui.Label;
+import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.Gdx;
-import io.github.spaceinvaders.entities.*;
 
 /** {@link com.badlogic.gdx.ApplicationListener} implementation shared by all platforms. */
 public class Main extends Game {
 
     int currentLevel = 1;
     int totalPoints = 0;
+    int livesLeft = 3;
 
     FitViewport viewport;
 
     SpriteBatch spriteBatch;
 
     Texture backgroundTexture;
-    Texture playerBulletTexture;
-
-    Sprite alien1Instance1;
-    Sprite alien1Instance2;
-    Sprite alien2Instance1;
-    Sprite alien2Instance2;
-    Sprite alien3Instance1;
-    Sprite alien3Instance2;
-
-    Entity player;
-    Entity playerBullet;
+    Skin skin;
 
     @Override
     public void create()
     {
-
         viewport = new FitViewport(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());;
 
         spriteBatch = new SpriteBatch();
 
-        backgroundTexture = new Texture("background/backgroundTexture.png");
+        // 1. Inicializa a Skin vazia
+        skin = new Skin();
 
-        Texture playerTexture = new Texture("sprites/playerSprite.png");
+        // 2. Carrega e gera a fonte customizada pelo arquivo TTF
+        FreeTypeFontGenerator generator = new FreeTypeFontGenerator(Gdx.files.internal("Minecraft.ttf"));
+        FreeTypeFontGenerator.FreeTypeFontParameter parameter = new FreeTypeFontGenerator.FreeTypeFontParameter();
+        parameter.size = 24;
+        parameter.color = Color.WHITE;
+        BitmapFont minhaFonte = generator.generateFont(parameter);
+        skin.add("default", minhaFonte);
 
-        player = new Entity(spriteBatch, playerTexture, 60, 40);
+        parameter.size = 48;
+        parameter.color = Color.RED;
+        minhaFonte = generator.generateFont(parameter);
+        skin.add("default-big", minhaFonte);
+        generator.dispose(); // Fecha o gerador para não vazar memória
 
-        // Resizes and adjustments on sprites
+        Label.LabelStyle labelStyle = new Label.LabelStyle();
+        labelStyle.font = skin.getFont("default");
+        skin.add("default", labelStyle);
 
-        player.move(viewport.getWorldWidth() / 2f, 50f);
+        labelStyle = new Label.LabelStyle();
+        labelStyle.font = skin.getFont("default-big");
+        skin.add("default-big", labelStyle);
 
-        setScreen(new GameScreen(this));
+        setScreen(new MenuScreen(this));
     }
 
     @Override
@@ -61,6 +69,6 @@ public class Main extends Game {
     public void dispose()
     {
         spriteBatch.dispose();
-        backgroundTexture.dispose();
+        skin.dispose();
     }
 }

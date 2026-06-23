@@ -8,6 +8,7 @@
     <img src="https://github.com/4i6caetano.png" style="height: 60px; border-radius:40px">
     <ul style="display:inline-block">
         <li><span>João Pedro Correia Caetano</span>
+        <li><span>16987067</span>
     </ul>
 </div>
 
@@ -16,6 +17,7 @@
     <img src="https://github.com/ItzCrynix.png" style="height: 60px; border-radius:40px">
     <ul style="display:inline-block">
         <li><span>Cainan Loyola Schiavolin</span>
+        <li><span>15444319</span>
     </ul>
 </div>
 
@@ -24,6 +26,7 @@
     <img src="https://github.com/kawancosta1.png" style="height: 60px; border-radius:40px"/>
     <ul style="display:inline-block">
         <li><span>Kawan da Silva Costa</span>
+        <li><span>15510661</span>
     </ul>
 </div>
 

@@ -7,9 +7,13 @@ import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.math.MathUtils;
+import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.badlogic.gdx.scenes.scene2d.ui.Label;
+import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.utils.ScreenUtils;
+import com.badlogic.gdx.utils.viewport.ScreenViewport;
 
 import io.github.spaceinvaders.entities.*;
 
@@ -20,12 +24,17 @@ public class GameScreen implements Screen {
     private Music backgroundMusic;
     private Sound shootingSFX;
     private Sound explosionSFX;
+    
+    private Stage stage;
+    private Label lbPoints;
+    private Label lbLevel;
+    private Entity lives[];
 
     private final float WORLD_WIDTH;
     private final float WORLD_HEIGHT;
 
-    private final int NUM_COLUMNS = 8;
-    private final int NUM_LINES = 6;
+    private final int NUM_COLUMNS = 6;
+    private final int NUM_LINES = 4;
     private final int TOTAL_NUMBER_OF_ALIENS = NUM_COLUMNS * NUM_LINES;
 
     private Entity player;
@@ -37,6 +46,7 @@ public class GameScreen implements Screen {
     private Alien explosion;
     private final Texture explosionTexture;
     private final Texture explosionTexture2;
+    private final Texture alientBulletTexture;
 
     private Alien aliens[];
     private int direction = 1;
@@ -44,17 +54,31 @@ public class GameScreen implements Screen {
     private final float LIMIT_Y;
     private float alienSpeed;
 
+    private final com.badlogic.gdx.utils.Array<PlayerBullet> alienBullets = new com.badlogic.gdx.utils.Array<>();
+    private float alienShootTimer = 0f;
+    private final float ALIEN_SHOOT_INTERVAL = 1.5f;
+
+    private com.badlogic.gdx.utils.FloatArray estrelasX;
+    private com.badlogic.gdx.utils.FloatArray estrelasY;
+    private final int QTD_ESTRELAS = 50;
+    private BitmapFont font;
+
     private int frameCount;
+
+    private boolean playerLose = false;
 
     public GameScreen(Main game)
     {
         this.game = game;
+        this.font = game.skin.getFont("default");
+
         this.frameCount = 0;
 
         this.WORLD_WIDTH = game.viewport.getWorldWidth();
         this.WORLD_HEIGHT = game.viewport.getWorldHeight();
 
         this.bulletTexture = new Texture("sprites/playerBullet.png");
+        this.alientBulletTexture = new Texture("sprites/alienBullet.png");
         this.explosionTexture = new Texture("sprites/explosion.png");
         this.explosionTexture2 = new Texture("sprites/explosion2.png");
 
@@ -71,6 +95,13 @@ public class GameScreen implements Screen {
             this.alienSpeed = ENTITY_WIDTH * 8;
         }
 
+        estrelasX = new com.badlogic.gdx.utils.FloatArray();
+        estrelasY = new com.badlogic.gdx.utils.FloatArray();
+
+        for (int i = 0; i < QTD_ESTRELAS; i++) {
+            estrelasX.add(com.badlogic.gdx.math.MathUtils.random(0, Gdx.graphics.getWidth()));
+            estrelasY.add(com.badlogic.gdx.math.MathUtils.random(0, Gdx.graphics.getHeight()));
+        }
 
         Texture alien1 = new Texture("sprites/alien1Instance1.png");
         Texture alien1Texture2 = new Texture("sprites/alien1Instance2.png");
@@ -89,6 +120,7 @@ public class GameScreen implements Screen {
             Texture currentTexture;
             Texture alternateTexture;
 
+            // Esses 3 ifs servem para separar as sprites dos aliens em 3 regiões, baseado no quão longe eles estão do player
             if (i < linesPerAlienType) {
                 currentTexture = alien3;
                 alternateTexture = alien3Texture2;
@@ -102,6 +134,7 @@ public class GameScreen implements Screen {
                 alternateTexture = alien1Texture2;
             }
 
+            // Calcula a posição do "grid" que o alien vai ficar
             float y = WORLD_HEIGHT - (ENTITY_HEIGHT * (i + 1) + ENTITY_HEIGHT / 3 * i);
 
             for (int j = 0; j < NUM_COLUMNS; j++) {
@@ -111,26 +144,53 @@ public class GameScreen implements Screen {
             }
         }
 
+        // instancia o jogador
         Texture playerTexture = new Texture("sprites/playerSprite.png");
-        this.player = new Entity(game.spriteBatch, playerTexture, WORLD_WIDTH / 2, 0, ENTITY_WIDTH, ENTITY_HEIGHT);
-        playerSpeed = ENTITY_WIDTH;
+        this.player = new Entity(game.spriteBatch, playerTexture, WORLD_WIDTH / 2, ENTITY_HEIGHT, ENTITY_WIDTH, ENTITY_HEIGHT);
+        playerSpeed = ENTITY_WIDTH * 2;
+
+        // Cria os sprites de vida que vão ficar no canto da tela
+        lives = new Entity[game.livesLeft];
+        for (int i = 0; i < game.livesLeft; i++) {
+            lives[i] = new Entity(game.spriteBatch, playerTexture, WORLD_WIDTH - (ENTITY_WIDTH / 2 * (game.livesLeft - i)), 10, ENTITY_WIDTH / 2, ENTITY_HEIGHT / 2);
+        }
     }
+
+    //
+    // Custom functions
+    //
 
     private void updateAliens(float delta) {
         boolean hitTheBorder = false;
+        boolean allAliensGone = true;
 
         float deltaX = alienSpeed * direction * delta;
 
         for (Entity alien : aliens) {
             if (alien == null) continue;
 
+            allAliensGone = false;
+
             alien.translate(deltaX, 0);
 
+            // verifica se o alien vai bater em um dos cantos do mapa
             if ((direction == 1 && alien.getX() + alien.getWidth() >= WORLD_WIDTH) || (direction == -1 && alien.getX() <= 0)) {
                 hitTheBorder = true;
             }
         }
 
+        if (allAliensGone) {
+            this.dispose();
+
+            // muda para a próxima fase
+            if (game.currentLevel == 1) {
+                game.setScreen(new LevelCompleteScreen(game));
+            } else {
+                game.setScreen(new GameComplete(game));
+            }
+        }
+
+        // muda a direção na qual os aliens estão andando e move eles um pouco pra baixo
         if (hitTheBorder) {
             direction *= -1;
 
@@ -141,45 +201,17 @@ public class GameScreen implements Screen {
                     alien.translate(0, -DROP_AMOUNT);
                 }
                 else {
-                    // player perdeu porque os aliens chegaram no final
+                    playerLose = true;
                 }
             }
         }
     }
 
-    @Override
-    public void resize(int width, int height) {
-        if(width <= 0 || height <= 0) return;
-        game.viewport.update(width, height, true);
-    }
-
-    private void input(float delta) {
-        if (Gdx.input.isKeyPressed(Input.Keys.A) || Gdx.input.isKeyPressed(Input.Keys.LEFT)) {
-            game.player.translate(-playerSpeed * delta, 0);
-        }
-
-        if (Gdx.input.isKeyPressed(Input.Keys.D) || Gdx.input.isKeyPressed(Input.Keys.RIGHT)) {
-            game.player.translate(playerSpeed * delta, 0);
-        }
-
-        if (Gdx.input.isButtonPressed(Input.Buttons.LEFT))
-        {
-            if(playerBullet == null)
-            {
-                float bulletX = game.player.getX() + (game.player.getWidth() / 2f) - (bulletTexture.getWidth() / 2f);
-                float bulletY = game.player.getY() + game.player.getHeight();
-                playerBullet = new PlayerBullet(game.spriteBatch, bulletTexture, bulletX, bulletY);
-
-                shootingSFX.play();
-            }
-        }
-    }
-
-    private void logic(float delta) {
-        float currentX = game.player.getX();
+    private void bulletCollisionlogic(float delta) {
+        float currentX = player.getX();
         float clampedX = MathUtils.clamp(currentX, 0, WORLD_WIDTH - player.getWidth());
         if (currentX != clampedX) {
-            game.player.move(clampedX, game.player.getY());
+            player.move(clampedX, player.getY());
         }
 
         if(playerBullet != null)
@@ -191,7 +223,6 @@ public class GameScreen implements Screen {
                 if(aliens[i] != null){
                     float alienRightBorder = aliens[i].getX() + aliens[i].getWidth();
                     float alienHeightBorder = aliens[i].getY() + aliens[i].getHeight();
-
                     float bulletRightBorder = playerBullet.getX() + playerBullet.getWidth();
                     float bulletHeightBorder = playerBullet.getY() + playerBullet.getHeight();
 
@@ -212,9 +243,219 @@ public class GameScreen implements Screen {
                 }
             }
 
+            // reseta a bala caso não tenha acertado nada
             if(playerBullet != null && playerBullet.isOutOfBounds(WORLD_HEIGHT))
             {
                 playerBullet = null;
+            }
+        }
+
+        for (int i = alienBullets.size - 1; i >= 0; i--) {
+            PlayerBullet b = alienBullets.get(i);
+            
+            // Move a bala para baixo (inverso do playerBullet)
+            b.translate(0, -300f * delta); 
+            
+            // Se sair da tela por baixo, remove
+            if (b.getY() + b.getHeight() < 0) {
+                alienBullets.removeIndex(i);
+                continue;
+            }
+            
+            // Checa colisão com o Player
+            float playerRight = player.getX() + player.getWidth();
+            float playerTop = player.getY() + player.getHeight();
+            float bRight = b.getX() + b.getWidth();
+            float bTop = b.getY() + b.getHeight();
+            
+            // quando a bala acerta o player
+            if (bRight > player.getX() && b.getX() < playerRight && b.getY() < playerTop && bTop > player.getY()) {
+                // Remove a bala que atingiu
+                alienBullets.removeIndex(i);
+                
+                // Cria explosão no local do Player
+                this.explosion = new Alien(game.spriteBatch, explosionTexture, explosionTexture2, player.getX(), player.getY(), player.getWidth(), player.getHeight());
+
+                if (explosionSFX != null) explosionSFX.play();
+                
+                game.livesLeft--;
+
+                // remove uma das vidas do display
+                lives[game.livesLeft] = null;
+            }
+        }
+
+        if (game.livesLeft == 0) {
+            playerLose = true;
+        }
+    }
+
+    private void alienShoot() {
+        // Cria uma lista temporária de índices de aliens que ainda estão vivos
+        com.badlogic.gdx.utils.IntArray aliveAliens = new com.badlogic.gdx.utils.IntArray();
+        for (int i = 0; i < TOTAL_NUMBER_OF_ALIENS; i++) {
+            if (aliens[i] != null) {
+                aliveAliens.add(i);
+            }
+        }
+
+        // Se houver aliens vivos, escolhe um sortido para atirar
+        if (aliveAliens.size > 0) {
+            int randomIdx = aliveAliens.get(MathUtils.random(0, aliveAliens.size - 1));
+            Alien shooter = aliens[randomIdx];
+            
+            float bulletX = shooter.getX() + (shooter.getWidth() / 2f) - (alientBulletTexture.getWidth() / 2f);
+            float bulletY = shooter.getY();
+            
+            // Reutiliza o PlayerBullet, mas vamos inverter a velocidade dele na lógica
+            PlayerBullet alienBullet = new PlayerBullet(game.spriteBatch, alientBulletTexture, bulletX, bulletY);
+            alienBullets.add(alienBullet);
+            
+            if (shootingSFX != null) shootingSFX.play();
+        }
+    }
+
+    //
+    // Screen interface functions
+    //
+
+    @Override
+    public void show() {
+        backgroundMusic = Gdx.audio.newMusic(Gdx.files.internal("Spacing around.mp3"));
+        backgroundMusic.setLooping(true);
+        backgroundMusic.setVolume(0.5f);
+        backgroundMusic.play();
+
+        shootingSFX = Gdx.audio.newSound(Gdx.files.internal("effects/SfxLazer.ogg"));
+        explosionSFX = Gdx.audio.newSound(Gdx.files.internal("effects/SfxExplosion.ogg"));
+
+        // coloca as informações da fase na tela
+        stage = new Stage(new ScreenViewport());
+        Gdx.input.setInputProcessor(stage);
+
+        lbLevel = new Label("Level: " + game.currentLevel, game.skin);
+        lbPoints = new Label("Points" + game.totalPoints, game.skin);
+
+        Table table = new Table();
+        table.bottom();
+        table.setFillParent(true);
+
+        table.add(lbLevel).left().pad(10);
+        table.add(lbPoints).left().pad(10);
+
+        stage.addActor(table);
+    }
+
+    private void draw(float delta) {
+        ScreenUtils.clear(Color.BLACK);
+        game.viewport.apply();
+        game.spriteBatch.setProjectionMatrix(game.viewport.getCamera().combined);
+        game.spriteBatch.begin();
+
+        font.setColor(com.badlogic.gdx.graphics.Color.WHITE);
+        for (int i = 0; i < QTD_ESTRELAS; i++) {
+            //isso que vai fazer a magica das volinhas passarem, pois ele vai fornecer a altura e veloidade corretas
+
+            float x = estrelasX.get(i) - (300 * delta);
+            //o efeito de "passar" é por causa dessa subtração ai
+            if (x < 0) {
+                x = Gdx.graphics.getWidth();
+                //a posição y e x vão ser aleatórias para cada bolinha
+                estrelasY.set(i, com.badlogic.gdx.math.MathUtils.random(0, Gdx.graphics.getHeight()));
+            }
+            estrelasX.set(i, x);
+            //desenhando a bolinha usando as posições aleatórias
+            font.draw(game.spriteBatch, ".", estrelasX.get(i), estrelasY.get(i));
+        }
+
+        player.draw();
+
+        if(playerBullet != null) {
+            playerBullet.draw();
+        }
+
+        for (Alien alien : aliens) {
+            if (alien != null) {
+                alien.draw();
+            }
+        }
+
+        for (PlayerBullet bullet : alienBullets) {
+            bullet.draw();
+        }
+
+        for (Entity life : lives) {
+            if (life != null) {
+                life.draw();
+            }
+        }
+
+        if (explosion != null) {
+            explosion.draw();
+        }
+
+        lbPoints.setText("Points: " + game.totalPoints);
+
+        stage.draw();
+
+        game.spriteBatch.end();
+    }
+
+    @Override
+    public void render(float delta) {
+        input(delta);
+
+        // esse counter serve para alternar o sprite dos aliens de vez em quando
+        if (this.frameCount % 10 == 0 && this.explosion != null) {
+            this.explosion.changeTexture();
+        }
+        // esse atualiza a posição deles
+        else if (this.frameCount % 15 == 0) {
+            updateAliens(delta);
+            this.explosion = null;
+            this.frameCount = 0;
+        }
+
+        alienShootTimer += delta;
+        if (alienShootTimer >= ALIEN_SHOOT_INTERVAL) {
+            alienShootTimer = 0f;
+            alienShoot();
+        }
+
+        draw(delta);
+        bulletCollisionlogic(delta);
+        stage.act(delta);
+
+        if (playerLose) {
+            this.dispose();
+
+            game.setScreen(new GameOverScreen(game));
+        }
+
+        this.frameCount++;
+    }
+
+    private void input(float delta) {
+        // movendo para a esquerda
+        if (Gdx.input.isKeyPressed(Input.Keys.A) || Gdx.input.isKeyPressed(Input.Keys.LEFT)) {
+            player.translate(-playerSpeed * delta, 0);
+        }
+
+        // movendo para a direita
+        if (Gdx.input.isKeyPressed(Input.Keys.D) || Gdx.input.isKeyPressed(Input.Keys.RIGHT)) {
+            player.translate(playerSpeed * delta, 0);
+        }
+
+        // atirou uma bala
+        if (Gdx.input.isButtonPressed(Input.Buttons.LEFT) || Gdx.input.isKeyPressed(Input.Keys.SHIFT_LEFT))
+        {
+            if(playerBullet == null)
+            {
+                float bulletX = player.getX() + (player.getWidth() / 2f) - (bulletTexture.getWidth() / 2f);
+                float bulletY = player.getY() + player.getHeight();
+                playerBullet = new PlayerBullet(game.spriteBatch, bulletTexture, bulletX, bulletY);
+
+                shootingSFX.play();
             }
         }
     }
@@ -235,7 +476,9 @@ public class GameScreen implements Screen {
 
     @Override
     public void pause() {
-
+        if (backgroundMusic != null && backgroundMusic.isPlaying()) {
+            backgroundMusic.pause();
+        }
     }
 
     @Override
@@ -251,62 +494,14 @@ public class GameScreen implements Screen {
         if (explosionSFX != null) {
             explosionSFX.dispose();
         }
-    }
 
-    private void draw()
-    {
-        ScreenUtils.clear(Color.BLACK);
-        game.viewport.apply();
-        game.spriteBatch.setProjectionMatrix(game.viewport.getCamera().combined);
-        game.spriteBatch.begin();
-
-        game.spriteBatch.draw(game.backgroundTexture, 0, 0, WORLD_WIDTH, WORLD_HEIGHT);
-        game.player.draw();
-
-        if(playerBullet != null)
-        {
-            playerBullet.draw();
-        }
-
-        for (int i = 0; i < NUM_COLUMNS * NUM_LINES; i++) {
-            if (aliens[i] != null) { // Evita erro se o alien morrer
-                aliens[i].draw();
-            }
-        }
-
-        if (explosion != null) {
-        explosion.draw();
-        }
-
-        game.spriteBatch.end();
+        stage.dispose();
     }
 
     @Override
-    public void show() {
-        backgroundMusic = Gdx.audio.newMusic(Gdx.files.internal("Spacing around.mp3"));
-        backgroundMusic.setLooping(true);
-        backgroundMusic.setVolume(0.5f);
-        backgroundMusic.play();
-
-        shootingSFX = Gdx.audio.newSound(Gdx.files.internal("effects/SfxLazer.ogg"));
-        explosionSFX = Gdx.audio.newSound(Gdx.files.internal("effects/SfxExplosion.ogg"));
-    }
-
-    @Override
-    public void render(float delta) {
-        input(delta);
-
-        if (this.frameCount % 10 == 0 && this.explosion != null) {
-            this.explosion.changeTexture();
-        }
-        else if (this.frameCount % 15 == 0) {
-            updateAliens(delta);
-            this.explosion = null;
-            this.frameCount = 0;
-        }
-        draw();
-        logic(delta);
-
-        this.frameCount++;
+    public void resize(int width, int height) {
+        if(width <= 0 || height <= 0) return;
+        game.viewport.update(width, height, true);
+        stage.getViewport().update(width, height, true);
     }
 }
