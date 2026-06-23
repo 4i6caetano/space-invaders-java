@@ -3,17 +3,19 @@ package io.github.spaceinvaders;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
+import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
-import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.utils.ScreenUtils;
 
 public class MenuScreen implements Screen {
     private final Main game;
 
-    private SpriteBatch batch;
     private BitmapFont font;
     private int opcaoSelecionada = 0;
-    private String mensagemMenu = "";
+
+    private Sprite logo;
+    private Texture logoTexture;
 
     public MenuScreen(Main game) {
         this.game = game;
@@ -21,37 +23,36 @@ public class MenuScreen implements Screen {
 
     @Override
     public void show() {
-        batch = new SpriteBatch();
         font = new BitmapFont();
+
+        logoTexture = new Texture(Gdx.files.internal("sprites/SpaceInvaders.png"));
+        logo = new Sprite(logoTexture);
+        logo.setPosition((game.viewport.getWorldWidth() - logo.getWidth()) / 2, game.viewport.getWorldHeight() - logo.getHeight());
     }
 
     @Override
     public void render(float delta) {
         ScreenUtils.clear(0, 0, 0, 1);
 
-        batch.begin();
+        game.spriteBatch.begin();
 
-        font.setColor(com.badlogic.gdx.graphics.Color.WHITE);
-        font.draw(batch, "Space Invaders", 100, 300);
+        logo.draw(game.spriteBatch);
 
         if (opcaoSelecionada == 0) {
             font.setColor(com.badlogic.gdx.graphics.Color.YELLOW);
         } else {
             font.setColor(com.badlogic.gdx.graphics.Color.WHITE);
         }
-        font.draw(batch, "New Game", 100, 250);
+        font.draw(game.spriteBatch, "New Game", 100, 250);
 
         if (opcaoSelecionada == 1) {
             font.setColor(com.badlogic.gdx.graphics.Color.YELLOW);
         } else {
             font.setColor(com.badlogic.gdx.graphics.Color.WHITE);
         }
-        font.draw(batch, "Exit", 100, 210);
+        font.draw(game.spriteBatch, "Exit", 100, 210);
 
-        font.setColor(com.badlogic.gdx.graphics.Color.WHITE);
-        font.draw(batch, mensagemMenu, 100, 200);
-
-        batch.end();
+        game.spriteBatch.end();
 
         if (Gdx.input.isKeyJustPressed(Input.Keys.DOWN)) {
             opcaoSelecionada++;
@@ -96,7 +97,7 @@ public class MenuScreen implements Screen {
 
     @Override
     public void dispose() {
-        batch.dispose();
+        game.spriteBatch.dispose();
         font.dispose();
     }
 }
