@@ -1,6 +1,7 @@
 package io.github.spaceinvaders;
 
 import com.badlogic.gdx.Game;
+import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
@@ -14,6 +15,7 @@ import com.badlogic.gdx.graphics.Color;
 public class Main extends Game {
 
     FitViewport viewport;
+
     SpriteBatch spriteBatch;
 
     Texture backgroundTexture;
@@ -30,7 +32,6 @@ public class Main extends Game {
     @Override
     public void create()
     {
-        setScreen(new FirstScreen());
 
         viewport = new FitViewport(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());;
 
@@ -63,6 +64,8 @@ public class Main extends Game {
 
         playerSprite.setSize(70, 50);
         playerSprite.setPosition(1, 1);
+
+        setScreen(new FirstScreen(this));
     }
 
     @Override
@@ -71,41 +74,9 @@ public class Main extends Game {
         viewport.update(width, height, true);
     }
 
-    public void render()
-    {
-        draw();
-    }
-
-    public void resume()
-    {
-
-    }
-
-    public void pause()
-    {
-
-    }
-
     public void dispose()
     {
-
-    }
-
-    // these live inside the 'render' method.
-
-    private void draw()
-    {
-        ScreenUtils.clear(Color.BLACK);
-        viewport.apply();
-        spriteBatch.setProjectionMatrix(viewport.getCamera().combined);
-        spriteBatch.begin();
-
-        float worldWidth = viewport.getWorldWidth();
-        float worldHeight = viewport.getWorldHeight();
-
-        spriteBatch.draw(backgroundTexture, 0, 0, worldWidth, worldHeight);
-        playerSprite.draw(spriteBatch);
-
-        spriteBatch.end();
+        spriteBatch.dispose();
+        backgroundTexture.dispose();
     }
 }
