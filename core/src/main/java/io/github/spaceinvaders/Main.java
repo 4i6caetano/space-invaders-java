@@ -19,6 +19,7 @@ public class Main extends Game {
     SpriteBatch spriteBatch;
 
     Texture backgroundTexture;
+    Texture playerBulletTexture;
 
     Sprite alien1Instance1;
     Sprite alien1Instance2;
@@ -44,7 +45,6 @@ public class Main extends Game {
         Texture playerBulletTexture = new Texture("sprites/playerBullet.png");
 
         player = new Entity(spriteBatch, playerTexture, 60, 40);
-        playerBullet = new PlayerBullet(spriteBatch, playerBulletTexture, 5, 15);
 
         // Resizes and adjustments on sprites
 

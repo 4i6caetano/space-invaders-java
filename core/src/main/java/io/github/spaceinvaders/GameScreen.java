@@ -8,6 +8,7 @@ import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.utils.ScreenUtils;
 
 import io.github.spaceinvaders.entities.*;
@@ -22,6 +23,9 @@ public class GameScreen implements Screen {
 
     private final float WORLD_WIDTH;
     private final float WORLD_HEIGHT;
+
+    private final Texture bulletTexture;
+    private SpriteBatch spriteBatch;
 
     private final int NUM_COLUMNS = 8;
     private final int NUM_LINES = 6;
@@ -46,6 +50,9 @@ public class GameScreen implements Screen {
 
         this.WORLD_WIDTH = game.viewport.getWorldWidth();
         this.WORLD_HEIGHT = game.viewport.getWorldHeight();
+
+        this.bulletTexture = game.playerBulletTexture;
+        this.spriteBatch = game.spriteBatch;
 
         float ENTITY_WIDTH = WORLD_WIDTH / (NUM_COLUMNS + 2);
         float ENTITY_HEIGHT = ENTITY_WIDTH / 2;
@@ -163,10 +170,23 @@ public class GameScreen implements Screen {
         game.viewport.update(width, height, true);
     }
 
-    @Override
-    public void pause() {
-        if (backgroundMusic != null && backgroundMusic.isPlaying()) {
-            backgroundMusic.pause();
+    private void input(float delta) {
+        if (Gdx.input.isKeyPressed(Input.Keys.A) || Gdx.input.isKeyPressed(Input.Keys.LEFT)) {
+            game.player.translate(-playerSpeed * delta, 0);
+        }
+
+        if (Gdx.input.isKeyPressed(Input.Keys.D) || Gdx.input.isKeyPressed(Input.Keys.RIGHT)) {
+            game.player.translate(playerSpeed * delta, 0);
+        }
+
+        if (Gdx.input.isButtonPressed(Input.Buttons.LEFT))
+        {
+            if(playerBullet == null)
+            {
+                float bulletX = game.player.getX() + (game.player.getWidth() / 2f) - (bulletTexture.getWidth() / 2f);
+                float bulletY = game.player.getY() + game.player.getHeight();
+                playerBullet = new PlayerBullet(spriteBatch, bulletTexture, bulletX, bulletY);
+            }
         }
     }
 
@@ -185,6 +205,11 @@ public class GameScreen implements Screen {
     }
 
     @Override
+    public void pause() {
+
+    }
+
+    @Override
     public void dispose() {
         if (backgroundMusic != null) {
             backgroundMusic.dispose();
@@ -196,19 +221,6 @@ public class GameScreen implements Screen {
 
         if (explosionSFX != null) {
             explosionSFX.dispose();
-        }
-    }
-
-    private void input(float delta)
-    {
-        if(Gdx.input.isKeyPressed(Input.Keys.A) || Gdx.input.isKeyPressed(Input.Keys.LEFT))
-        {
-            game.player.translate(-playerSpeed * delta, 0);
-        }
-
-        if(Gdx.input.isKeyPressed(Input.Keys.D) || Gdx.input.isKeyPressed(Input.Keys.RIGHT))
-        {
-            game.player.translate(playerSpeed * delta, 0);
         }
     }
 
