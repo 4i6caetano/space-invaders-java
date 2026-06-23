@@ -28,8 +28,6 @@ public class GameScreen implements Screen {
 
     private Entity aliens[];
 
-    // VARIÁVEIS DE MOVIMENTO DOS ALIENS
-    private float alienSpeed = 40f;      // Velocidade horizontal
     private int direction = 1;           // 1 = Direita, -1 = Esquerda
     private final float DROP_AMOUNT = 15f; // Quanto eles descem ao bater na borda
     private final float LIMIT_Y = 100f;   // Limite inferior (altura mínima que podem chegar)
