@@ -7,9 +7,12 @@ import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.math.MathUtils;
+import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
+import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.utils.ScreenUtils;
+import com.badlogic.gdx.utils.viewport.ScreenViewport;
 
 import io.github.spaceinvaders.entities.*;
 
@@ -20,7 +23,8 @@ public class GameScreen implements Screen {
     private Music backgroundMusic;
     private Sound shootingSFX;
     private Sound explosionSFX;
-
+    
+    private Stage stage;
     private Label lbPoints;
     private Label lbLevel;
     private Entity lives[];
@@ -122,8 +126,8 @@ public class GameScreen implements Screen {
         }
 
         Texture playerTexture = new Texture("sprites/playerSprite.png");
-        this.player = new Entity(game.spriteBatch, playerTexture, WORLD_WIDTH / 2, 0, ENTITY_WIDTH, ENTITY_HEIGHT);
-        playerSpeed = ENTITY_WIDTH;
+        this.player = new Entity(game.spriteBatch, playerTexture, WORLD_WIDTH / 2, ENTITY_HEIGHT, ENTITY_WIDTH, ENTITY_HEIGHT);
+        playerSpeed = ENTITY_WIDTH * 2;
 
         lives = new Entity[game.livesLeft];
         for (int i = 0; i < game.livesLeft; i++) {
@@ -289,6 +293,32 @@ public class GameScreen implements Screen {
     // Screen interface functions
     //
 
+    @Override
+    public void show() {
+        backgroundMusic = Gdx.audio.newMusic(Gdx.files.internal("Spacing around.mp3"));
+        backgroundMusic.setLooping(true);
+        backgroundMusic.setVolume(0.5f);
+        backgroundMusic.play();
+
+        shootingSFX = Gdx.audio.newSound(Gdx.files.internal("effects/SfxLazer.ogg"));
+        explosionSFX = Gdx.audio.newSound(Gdx.files.internal("effects/SfxExplosion.ogg"));
+
+        stage = new Stage(new ScreenViewport());
+        Gdx.input.setInputProcessor(stage);
+
+        lbLevel = new Label("Level: " + game.currentLevel, game.skin);
+        lbPoints = new Label("Points" + game.totalPoints, game.skin);
+
+        Table table = new Table();
+        table.bottom();
+        table.setFillParent(true);
+
+        table.add(lbLevel).left().pad(10);
+        table.add(lbPoints).left().pad(10);
+
+        stage.addActor(table);
+    }
+
     private void draw()
     {
         ScreenUtils.clear(Color.BLACK);
@@ -324,18 +354,11 @@ public class GameScreen implements Screen {
             explosion.draw();
         }
 
+        lbPoints.setText("Points: " + game.totalPoints);
+
+        stage.draw();
+
         game.spriteBatch.end();
-    }
-
-    @Override
-    public void show() {
-        backgroundMusic = Gdx.audio.newMusic(Gdx.files.internal("Spacing around.mp3"));
-        backgroundMusic.setLooping(true);
-        backgroundMusic.setVolume(0.5f);
-        backgroundMusic.play();
-
-        shootingSFX = Gdx.audio.newSound(Gdx.files.internal("effects/SfxLazer.ogg"));
-        explosionSFX = Gdx.audio.newSound(Gdx.files.internal("effects/SfxExplosion.ogg"));
     }
 
     @Override
@@ -359,6 +382,7 @@ public class GameScreen implements Screen {
 
         draw();
         bulletCollisionlogic(delta);
+        stage.act(delta);
 
         if (playerLose) {
             this.dispose();
@@ -425,11 +449,14 @@ public class GameScreen implements Screen {
         if (explosionSFX != null) {
             explosionSFX.dispose();
         }
+
+        stage.dispose();
     }
 
     @Override
     public void resize(int width, int height) {
         if(width <= 0 || height <= 0) return;
         game.viewport.update(width, height, true);
+
     }
 }
