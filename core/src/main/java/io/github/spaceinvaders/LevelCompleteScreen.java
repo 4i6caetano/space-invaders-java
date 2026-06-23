@@ -5,18 +5,25 @@ import com.badlogic.gdx.Input;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.graphics.g2d.BitmapFont;
+import com.badlogic.gdx.scenes.scene2d.ui.Label;
+import com.badlogic.gdx.scenes.scene2d.ui.Label.LabelStyle;
 import com.badlogic.gdx.utils.ScreenUtils;
 
 public class LevelCompleteScreen implements Screen {
     private final Main game;
-    private final BitmapFont font;
+
     private Music leveCompleteMusic;
+
+    private Label lbLevelComplete, lbPressEnter;
 
     public LevelCompleteScreen(Main game) {
         this.game = game;
-        this.font = new BitmapFont(); // Fonte padrão (branca)
-        this.font.getData().setScale(2f);
+
+        lbLevelComplete = new Label("LEVEL COMPLETE", game.skin.get("default-big", LabelStyle.class));
+        lbLevelComplete.setPosition((game.viewport.getWorldWidth() - lbLevelComplete.getWidth()) / 2, game.viewport.getWorldHeight() - 100);
+
+        lbPressEnter = new Label("Press ENTER to continue...", game.skin.get("default", LabelStyle.class));
+        lbPressEnter.setPosition((game.viewport.getWorldWidth() - lbPressEnter.getWidth()) / 2, 80);
     }
 
     @Override
@@ -24,8 +31,10 @@ public class LevelCompleteScreen implements Screen {
         ScreenUtils.clear(Color.BLACK);
 
         game.spriteBatch.begin();
-        font.draw(game.spriteBatch, "FASE CONCLUIDA!", 100, 400);
-        font.draw(game.spriteBatch, "Pressione ENTER para proxima fase", 100, 300);
+        
+        lbLevelComplete.draw(game.spriteBatch, 1);
+        lbPressEnter.draw(game.spriteBatch, 1);
+
         game.spriteBatch.end();
 
         if (Gdx.input.isKeyJustPressed(Input.Keys.ENTER)) {
@@ -41,8 +50,7 @@ public class LevelCompleteScreen implements Screen {
         leveCompleteMusic.play();
     }
     
-    @Override public void dispose() { 
-        font.dispose();
+    @Override public void dispose() {
         leveCompleteMusic.dispose();
     }
 

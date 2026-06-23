@@ -4,9 +4,9 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Label.LabelStyle;
+import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.ScreenUtils;
 
 public class GameOverScreen implements Screen {
@@ -17,6 +17,7 @@ public class GameOverScreen implements Screen {
         this.game = game;
 
         lbGameOver = new Label("GAME OVER", game.skin.get("default-big", LabelStyle.class));
+        lbGameOver.setAlignment(Align.center);
         lbGameOver.setPosition((game.viewport.getWorldWidth() - lbGameOver.getWidth()) / 2, game.viewport.getWorldHeight() - 100);
 
         lbPoints = new Label("Points: " + game.totalPoints, game.skin.get("default", LabelStyle.class));
