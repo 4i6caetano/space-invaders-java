@@ -12,79 +12,92 @@ import io.github.spaceinvaders.entities.*;
 
 /** First screen of the application. Displayed after the application is created. */
 public class GameScreen implements Screen {
-
     private final Main game;
 
-    private float alienSpeed;
-
-    private final float worldWidth;
-    private final float worldHeight;
-
-    private final float playerWidth;
-    private final float playerHeight;
+    private final float WORLD_WIDTH;
+    private final float WORLD_HEIGHT;
 
     private final int NUM_COLUMNS = 8;
-    private final int NUM_LINES = 3;
+    private final int NUM_LINES = 6;
 
-    private Entity aliens[];
+    private Entity player;
+    private float playerSpeed;
 
-    private int direction = 1;           // 1 = Direita, -1 = Esquerda
-    private final float DROP_AMOUNT = 15f; // Quanto eles descem ao bater na borda
-    private final float LIMIT_Y = 100f;   // Limite inferior (altura mínima que podem chegar)
+    private Alien aliens[];
+    private int direction = 1;
+    private final float DROP_AMOUNT;
+    private final float LIMIT_Y;
+    private float alienSpeed;
+
+    private int frameCount;
 
     public GameScreen(Main game)
     {
         this.game = game;
-        this.aliens = new Entity[NUM_COLUMNS * NUM_LINES];
+        this.frameCount = 0;
 
-        float baseSpeed = 30f;
+        this.WORLD_WIDTH = game.viewport.getWorldWidth();
+        this.WORLD_HEIGHT = game.viewport.getWorldHeight();
 
-        this.worldWidth = game.viewport.getWorldWidth();
-        this.worldHeight = game.viewport.getWorldHeight();
-        this.playerWidth = game.playerSprite.getWidth();
-        this.playerHeight = game.playerSprite.getWidth();
+        float ENTITY_WIDTH = WORLD_WIDTH / (NUM_COLUMNS + 2);
+        float ENTITY_HEIGHT = ENTITY_WIDTH / 2;
 
-        if(game.currentLevel == 1)
-        {
-            this.alienSpeed = baseSpeed;
+        DROP_AMOUNT = ENTITY_HEIGHT / 2;
+        LIMIT_Y = ENTITY_HEIGHT * 3;
+
+        if(game.currentLevel == 1) {
+            this.alienSpeed = ENTITY_WIDTH * 4;
         }
-        else
-        {
-            this.alienSpeed = baseSpeed * 2;
+        else {
+            this.alienSpeed = ENTITY_WIDTH * 8;
         }
-        
-        int ALIEN_WIDTH = (int) (game.viewport.getWorldWidth() / (NUM_COLUMNS + 2));
-        int ALIENT_HEIGHT = ALIEN_WIDTH / 2;
 
-        // Otimização: Carregar texturas fora do loop para evitar memory leak
+
         Texture alien1 = new Texture("sprites/alien1Instance1.png");
+        Texture alien1Texture2 = new Texture("sprites/alien1Instance2.png");
+
         Texture alien2 = new Texture("sprites/alien2Instance1.png");
+        Texture alien2Texture2 = new Texture("sprites/alien2Instance2.png");
+
         Texture alien3 = new Texture("sprites/alien3Instance1.png");
+        Texture alien3Texture2 = new Texture("sprites/alien3Instance2.png");
 
+        this.aliens = new Alien[NUM_COLUMNS * NUM_LINES];
+
+        int linesPerAlienType = MathUtils.floor(NUM_LINES / 3);
         for (int i = 0; i < NUM_LINES; i++) {
+            if (i == 1) continue;
+
+            Texture currentTexture;
+            Texture alternateTexture;
+
+            if (i < linesPerAlienType) {
+                currentTexture = alien3;
+                alternateTexture = alien3Texture2;
+            }
+            else if (i >= linesPerAlienType && i < linesPerAlienType * 2) {
+                currentTexture = alien2;
+                alternateTexture = alien2Texture2;
+            }
+            else {
+                currentTexture = alien1;
+                alternateTexture = alien1Texture2;
+            }
+
+            float y = WORLD_HEIGHT - (ENTITY_HEIGHT * (i + 1) + ENTITY_HEIGHT / 3 * i);
+
             for (int j = 0; j < NUM_COLUMNS; j++) {
-                Texture currentTexture;
-                float y = game.viewport.getWorldHeight();
-
-                if (i % 3 == 0) {
-                    currentTexture = alien1;
-                    y -= ALIENT_HEIGHT;
-                }
-                else if (i % 3 == 1) {
-                    currentTexture = alien2;
-                    y -= ALIENT_HEIGHT * 2;
-                }
-                else {
-                    currentTexture = alien3;
-                    y -= ALIENT_HEIGHT * 3;
-                }
-
                 int index = i * NUM_COLUMNS + j;
 
-                aliens[index] = new Entity(game.spriteBatch, currentTexture, ALIEN_WIDTH, ALIENT_HEIGHT);
-                aliens[index].move(ALIEN_WIDTH * (j + 1), y);
+                if (j == 4) continue;
+
+                aliens[index] = new Alien(game.spriteBatch, currentTexture, alternateTexture, ENTITY_WIDTH * j, y, ENTITY_WIDTH, ENTITY_HEIGHT);
             }
         }
+
+        Texture playerTexture = new Texture("sprites/playerSprite.png");
+        this.player = new Entity(game.spriteBatch, playerTexture, WORLD_WIDTH / 2, 0, ENTITY_WIDTH, ENTITY_HEIGHT);
+        playerSpeed = ENTITY_WIDTH;
     }
 
     @Override
@@ -94,14 +107,18 @@ public class GameScreen implements Screen {
     @Override
     public void render(float delta) {
         input(delta);
-        updateAliens(delta); // <- Atualiza a lógica dos aliens
+        if (this.frameCount % 20 == 0) {
+            updateAliens(delta);
+            this.frameCount = 0;
+        }
         draw();
         logic();
+
+        this.frameCount++;
     }
 
     private void updateAliens(float delta) {
         boolean bateramNaBorda = false;
-        float worldWidth = game.viewport.getWorldWidth();
 
         // 1. Calcula quanto eles devem andar NESSE frame
         float deslocamentoX = alienSpeed * direction * delta;
@@ -114,7 +131,7 @@ public class GameScreen implements Screen {
             alien.move(deslocamentoX, 0); 
 
             // Checa a borda usando o getX() atualizado do seu alien
-            if ((direction == 1 && alien.getX() + alien.getWidth() >= worldWidth) || (direction == -1 && alien.getX() <= 0)) {
+            if ((direction == 1 && alien.getX() + alien.getWidth() >= WORLD_WIDTH) || (direction == -1 && alien.getX() <= 0)) {
                 bateramNaBorda = true;
             }
         }
@@ -157,19 +174,19 @@ public class GameScreen implements Screen {
 
     private void input(float delta)
     {
-        float speed = 70f;
         if(Gdx.input.isKeyPressed(Input.Keys.A) || Gdx.input.isKeyPressed(Input.Keys.LEFT))
         {
-            game.playerSprite.translateX(-speed * delta);
+            game.playerSprite.translateX(-playerSpeed * delta);
         }
 
         if(Gdx.input.isKeyPressed(Input.Keys.D) || Gdx.input.isKeyPressed(Input.Keys.RIGHT))
         {
-            game.playerSprite.translateX( speed * delta);
+            game.playerSprite.translateX(playerSpeed * delta);
         }
 
         if(Gdx.input.isButtonJustPressed(Input.Buttons.LEFT))
         {
+
         }
     }
 
@@ -180,7 +197,7 @@ public class GameScreen implements Screen {
         game.spriteBatch.setProjectionMatrix(game.viewport.getCamera().combined);
         game.spriteBatch.begin();
 
-        game.spriteBatch.draw(game.backgroundTexture, 0, 0, worldWidth, worldHeight);
+        game.spriteBatch.draw(game.backgroundTexture, 0, 0, WORLD_WIDTH, WORLD_HEIGHT);
         game.playerSprite.draw(game.spriteBatch);
 
         for (int i = 0; i < NUM_COLUMNS * NUM_LINES; i++) {
@@ -194,6 +211,6 @@ public class GameScreen implements Screen {
 
     private void logic()
     {
-        game.playerSprite.setX(MathUtils.clamp(game.playerSprite.getX(), 0, worldWidth - playerWidth));
+        game.playerSprite.setX(MathUtils.clamp(game.playerSprite.getX(), 0, WORLD_WIDTH - player.getWidth()));
     }
 }

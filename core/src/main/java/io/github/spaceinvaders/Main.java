@@ -37,24 +37,6 @@ public class Main extends Game {
 
         backgroundTexture = new Texture("background/backgroundTexture.png");
 
-        Texture alien1Texture1 = new Texture("sprites/alien1Instance1.png");
-        alien1Instance1 = new Sprite(alien1Texture1);
-
-        Texture alien1Texture2 = new Texture("sprites/alien1Instance2.png");
-        alien1Instance2 = new Sprite(alien1Texture2);
-
-        Texture alien2Texture1 = new Texture("sprites/alien2Instance1.png");
-        alien2Instance1 = new Sprite(alien2Texture1);
-
-        Texture alien2Texture2 = new Texture("sprites/alien2Instance2.png");
-        alien2Instance2 = new Sprite(alien2Texture2);
-
-        Texture alien3Texture1 = new Texture("sprites/alien3Instance1.png");
-        alien3Instance1 = new Sprite(alien3Texture1);
-
-        Texture alien3Texture2 = new Texture("sprites/alien3Instance2.png");
-        alien3Instance2 = new Sprite(alien3Texture2);
-
         Texture playerTexture = new Texture("sprites/playerSprite.png");
         playerSprite = new Sprite(playerTexture);
 
