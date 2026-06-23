@@ -17,11 +17,11 @@ public class Lwjgl3Launcher {
 
     private static Lwjgl3ApplicationConfiguration getDefaultConfiguration() {
         Lwjgl3ApplicationConfiguration configuration = new Lwjgl3ApplicationConfiguration();
-        configuration.setTitle("space invaders");
+        configuration.setTitle("Space Invaders");
         configuration.useVsync(true);
         configuration.setForegroundFPS(Lwjgl3ApplicationConfiguration.getDisplayMode().refreshRate + 1);
         configuration.setWindowedMode(640, 480);
-        configuration.setWindowIcon("playerSprite.png");
+        configuration.setWindowIcon("alienIcon.png");
 
         return configuration;
     }

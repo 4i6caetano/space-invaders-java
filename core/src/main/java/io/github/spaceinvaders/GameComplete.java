@@ -30,6 +30,7 @@ public class GameComplete implements Screen {
     public void render(float delta) {
         ScreenUtils.clear(Color.BLACK);
 
+        // desenha as labels na tela
         game.spriteBatch.begin();
         
         lbLevelComplete.draw(game.spriteBatch, 1);

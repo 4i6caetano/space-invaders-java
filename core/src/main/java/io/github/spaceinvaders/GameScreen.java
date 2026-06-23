@@ -103,6 +103,7 @@ public class GameScreen implements Screen {
             Texture currentTexture;
             Texture alternateTexture;
 
+            // Esses 3 ifs servem para separar as sprites dos aliens em 3 regiões, baseado no quão longe eles estão do player
             if (i < linesPerAlienType) {
                 currentTexture = alien3;
                 alternateTexture = alien3Texture2;
@@ -116,6 +117,7 @@ public class GameScreen implements Screen {
                 alternateTexture = alien1Texture2;
             }
 
+            // Calcula a posição do "grid" que o alien vai ficar
             float y = WORLD_HEIGHT - (ENTITY_HEIGHT * (i + 1) + ENTITY_HEIGHT / 3 * i);
 
             for (int j = 0; j < NUM_COLUMNS; j++) {
@@ -125,13 +127,15 @@ public class GameScreen implements Screen {
             }
         }
 
+        // instancia o jogador
         Texture playerTexture = new Texture("sprites/playerSprite.png");
         this.player = new Entity(game.spriteBatch, playerTexture, WORLD_WIDTH / 2, ENTITY_HEIGHT, ENTITY_WIDTH, ENTITY_HEIGHT);
         playerSpeed = ENTITY_WIDTH * 2;
 
+        // Cria os sprites de vida que vão ficar no canto da tela
         lives = new Entity[game.livesLeft];
         for (int i = 0; i < game.livesLeft; i++) {
-            lives[i] = new Entity(game.spriteBatch, playerTexture, WORLD_WIDTH - (ENTITY_WIDTH / 2 * (game.livesLeft - i)), 0, ENTITY_WIDTH / 2, ENTITY_HEIGHT / 2);
+            lives[i] = new Entity(game.spriteBatch, playerTexture, WORLD_WIDTH - (ENTITY_WIDTH / 2 * (game.livesLeft - i)), 10, ENTITY_WIDTH / 2, ENTITY_HEIGHT / 2);
         }
     }
 
@@ -152,14 +156,16 @@ public class GameScreen implements Screen {
 
             alien.translate(deltaX, 0);
 
+            // verifica se o alien vai bater em um dos cantos do mapa
             if ((direction == 1 && alien.getX() + alien.getWidth() >= WORLD_WIDTH) || (direction == -1 && alien.getX() <= 0)) {
                 hitTheBorder = true;
             }
         }
 
         if (allAliensGone) {
-            this.dispose(); // Limpa música e sfx da fase atual
+            this.dispose();
 
+            // muda para a próxima fase
             if (game.currentLevel == 1) {
                 game.setScreen(new LevelCompleteScreen(game));
             } else {
@@ -167,6 +173,7 @@ public class GameScreen implements Screen {
             }
         }
 
+        // muda a direção na qual os aliens estão andando e move eles um pouco pra baixo
         if (hitTheBorder) {
             direction *= -1;
 
@@ -199,7 +206,6 @@ public class GameScreen implements Screen {
                 if(aliens[i] != null){
                     float alienRightBorder = aliens[i].getX() + aliens[i].getWidth();
                     float alienHeightBorder = aliens[i].getY() + aliens[i].getHeight();
-
                     float bulletRightBorder = playerBullet.getX() + playerBullet.getWidth();
                     float bulletHeightBorder = playerBullet.getY() + playerBullet.getHeight();
 
@@ -220,6 +226,7 @@ public class GameScreen implements Screen {
                 }
             }
 
+            // reseta a bala caso não tenha acertado nada
             if(playerBullet != null && playerBullet.isOutOfBounds(WORLD_HEIGHT))
             {
                 playerBullet = null;
@@ -244,6 +251,7 @@ public class GameScreen implements Screen {
             float bRight = b.getX() + b.getWidth();
             float bTop = b.getY() + b.getHeight();
             
+            // quando a bala acerta o player
             if (bRight > player.getX() && b.getX() < playerRight && b.getY() < playerTop && bTop > player.getY()) {
                 // Remove a bala que atingiu
                 alienBullets.removeIndex(i);
@@ -255,6 +263,7 @@ public class GameScreen implements Screen {
                 
                 game.livesLeft--;
 
+                // remove uma das vidas do display
                 lives[game.livesLeft] = null;
             }
         }
@@ -303,6 +312,7 @@ public class GameScreen implements Screen {
         shootingSFX = Gdx.audio.newSound(Gdx.files.internal("effects/SfxLazer.ogg"));
         explosionSFX = Gdx.audio.newSound(Gdx.files.internal("effects/SfxExplosion.ogg"));
 
+        // coloca as informações da fase na tela
         stage = new Stage(new ScreenViewport());
         Gdx.input.setInputProcessor(stage);
 
@@ -319,8 +329,7 @@ public class GameScreen implements Screen {
         stage.addActor(table);
     }
 
-    private void draw()
-    {
+    private void draw() {
         ScreenUtils.clear(Color.BLACK);
         game.viewport.apply();
         game.spriteBatch.setProjectionMatrix(game.viewport.getCamera().combined);
@@ -329,8 +338,7 @@ public class GameScreen implements Screen {
         game.spriteBatch.draw(game.backgroundTexture, 0, 0, WORLD_WIDTH, WORLD_HEIGHT);
         player.draw();
 
-        if(playerBullet != null)
-        {
+        if(playerBullet != null) {
             playerBullet.draw();
         }
 
@@ -365,9 +373,11 @@ public class GameScreen implements Screen {
     public void render(float delta) {
         input(delta);
 
+        // esse counter serve para alternar o sprite dos aliens de vez em quando
         if (this.frameCount % 10 == 0 && this.explosion != null) {
             this.explosion.changeTexture();
         }
+        // esse atualiza a posição deles
         else if (this.frameCount % 15 == 0) {
             updateAliens(delta);
             this.explosion = null;
@@ -394,15 +404,18 @@ public class GameScreen implements Screen {
     }
 
     private void input(float delta) {
+        // movendo para a esquerda
         if (Gdx.input.isKeyPressed(Input.Keys.A) || Gdx.input.isKeyPressed(Input.Keys.LEFT)) {
             player.translate(-playerSpeed * delta, 0);
         }
 
+        // movendo para a direita
         if (Gdx.input.isKeyPressed(Input.Keys.D) || Gdx.input.isKeyPressed(Input.Keys.RIGHT)) {
             player.translate(playerSpeed * delta, 0);
         }
 
-        if (Gdx.input.isButtonPressed(Input.Buttons.LEFT))
+        // atirou uma bala
+        if (Gdx.input.isButtonPressed(Input.Buttons.LEFT) || Gdx.input.isKeyPressed(Input.Keys.SHIFT_LEFT))
         {
             if(playerBullet == null)
             {
@@ -457,6 +470,6 @@ public class GameScreen implements Screen {
     public void resize(int width, int height) {
         if(width <= 0 || height <= 0) return;
         game.viewport.update(width, height, true);
-
+        stage.getViewport().update(width, height, true);
     }
 }

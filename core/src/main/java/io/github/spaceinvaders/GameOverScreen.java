@@ -31,6 +31,7 @@ public class GameOverScreen implements Screen {
     public void render(float delta) {
         ScreenUtils.clear(Color.BLACK);
 
+        // desenha as labels na tela
         game.spriteBatch.begin();
         
         lbGameOver.draw(game.spriteBatch, 1);
