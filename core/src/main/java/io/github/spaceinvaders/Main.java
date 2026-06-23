@@ -1,15 +1,11 @@
 package io.github.spaceinvaders;
 
 import com.badlogic.gdx.Game;
-import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.Gdx;
-
-import com.badlogic.gdx.graphics.Color;
 
 /** {@link com.badlogic.gdx.ApplicationListener} implementation shared by all platforms. */
 public class Main extends Game {
@@ -62,10 +58,10 @@ public class Main extends Game {
 
         // Resizes and adjustments on sprites
 
-        playerSprite.setSize(70, 50);
+        playerSprite.setSize(60, 40);
         playerSprite.setPosition(1, 1);
 
-        setScreen(new FirstScreen(this));
+        setScreen(new GameScreen(this));
     }
 
     @Override

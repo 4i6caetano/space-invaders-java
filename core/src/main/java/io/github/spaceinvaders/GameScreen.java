@@ -2,18 +2,68 @@ package io.github.spaceinvaders;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
+import com.badlogic.gdx.InputAdapter;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.utils.ScreenUtils;
 
 /** First screen of the application. Displayed after the application is created. */
-public class FirstScreen implements Screen {
+public class GameScreen implements Screen {
 
     private final Main game;
 
-    public FirstScreen(Main game)
+    private boolean movingLeft;
+    private boolean movingRight;
+
+    public GameScreen(Main game)
     {
         this.game = game;
+        Gdx.input.setInputProcessor(new InputAdapter() {
+
+            @Override
+            public boolean keyDown (int keycode) {
+                switch (keycode)
+                {
+                    case Input.Keys.LEFT:
+                    case Input.Keys.A:
+                        movingLeft = true;
+                        break;
+
+                    case Input.Keys.RIGHT:
+                    case Input.Keys.D:
+                        movingRight = true;
+                        break;
+                }
+                return false;
+            }
+
+            @Override
+            public boolean keyUp (int keycode) {
+                switch (keycode)
+                {
+                    case Input.Keys.LEFT:
+                    case Input.Keys.A:
+                        movingLeft = false;
+                        break;
+                    case Input.Keys.RIGHT:
+                    case Input.Keys.D:
+                        movingRight = false;
+                        break;
+                }
+                return false;
+            }
+
+            @Override
+            public boolean touchDown (int x, int y, int pointer, int button) {
+                return false;
+            }
+
+            @Override
+            public boolean touchUp (int x, int y, int pointer, int button) {
+                return false;
+            }
+        });
+
     }
 
     @Override
@@ -62,30 +112,16 @@ public class FirstScreen implements Screen {
         float speed = 70f;
         float delta = Gdx.graphics.getDeltaTime();
 
-        if(Gdx.input.isKeyPressed(Input.Keys.A))
-        {
-            game.playerSprite.translateX(-speed * delta);
-        }
-        if(Gdx.input.isKeyPressed((Input.Keys.LEFT)))
+        if(movingLeft)
         {
             game.playerSprite.translateX(-speed * delta);
         }
 
-        if(Gdx.input.isKeyPressed(Input.Keys.D))
+        if(movingRight)
         {
             game.playerSprite.translateX( speed * delta);
         }
-        if(Gdx.input.isKeyPressed((Input.Keys.RIGHT)))
-        {
-            game.playerSprite.translateX(speed * delta);
-        }
-
         // PLAYER SHOOTS
-
-        if(Gdx.input.isKeyPressed((Input.Keys.SHIFT_LEFT)))
-        {
-            // PLAYER SHOOTS A BULLET
-        }
     }
 
     private void draw()
