@@ -42,19 +42,22 @@ public class Main extends Game {
         FreeTypeFontGenerator.FreeTypeFontParameter parameter = new FreeTypeFontGenerator.FreeTypeFontParameter();
         parameter.size = 24;
         parameter.color = Color.WHITE;
-        
         BitmapFont minhaFonte = generator.generateFont(parameter);
-        generator.dispose(); // Fecha o gerador para não vazar memória
-
-        // 3. REGISTRA a fonte na Skin
         skin.add("default", minhaFonte);
 
-        // 4. CRIA E REGISTRA o LabelStyle usando a fonte recém-adicionada
+        parameter.size = 48;
+        parameter.color = Color.RED;
+        minhaFonte = generator.generateFont(parameter);
+        skin.add("default-big", minhaFonte);
+        generator.dispose(); // Fecha o gerador para não vazar memória
+
         Label.LabelStyle labelStyle = new Label.LabelStyle();
-        labelStyle.font = skin.getFont("default"); // Pega a fonte que registramos acima
-        
-        // ESSA LINHA RESOLVE O ERRO: Registra o estilo "default" para os Labels encontrarem
+        labelStyle.font = skin.getFont("default");
         skin.add("default", labelStyle);
+
+        labelStyle = new Label.LabelStyle();
+        labelStyle.font = skin.getFont("default-big");
+        skin.add("default-big", labelStyle);
 
         setScreen(new MenuScreen(this));
     }
