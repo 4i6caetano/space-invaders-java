@@ -3,16 +3,31 @@ package io.github.spaceinvaders;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.Screen;
+import com.badlogic.gdx.audio.Music;
+import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.math.MathUtils;
+import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.badlogic.gdx.scenes.scene2d.ui.Label;
+import com.badlogic.gdx.scenes.scene2d.ui.Skin;
+import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.utils.ScreenUtils;
+import com.badlogic.gdx.utils.viewport.ScreenViewport;
 
 import io.github.spaceinvaders.entities.*;
 
 /** First screen of the application. Displayed after the application is created. */
 public class GameScreen implements Screen {
     private final Main game;
+
+    private Stage stage;
+    private Skin skin;
+
+    private Music backgroundMusic;
+    private Sound shootingSFX;
+    private Sound explosionSFX;
 
     private final float WORLD_WIDTH;
     private final float WORLD_HEIGHT;
@@ -102,6 +117,43 @@ public class GameScreen implements Screen {
 
     @Override
     public void show() {
+        stage = new Stage(new ScreenViewport());
+        Gdx.input.setInputProcessor(stage);
+
+        backgroundMusic = Gdx.audio.newMusic(Gdx.files.internal("Spacing around.mp3"));
+        backgroundMusic.setLooping(true);
+        backgroundMusic.setVolume(0.5f);
+        backgroundMusic.play();
+
+        shootingSFX = Gdx.audio.newSound(Gdx.files.internal("effects/SfxLazer.ogg"));
+
+        // Configuração da Skin e Interface
+        skin = new Skin();
+        BitmapFont font = new BitmapFont();
+        skin.add("default", font);
+
+        Label.LabelStyle labelStyle = new Label.LabelStyle();
+        labelStyle.font = skin.getFont("default");
+        labelStyle.fontColor = Color.WHITE;
+        skin.add("default", labelStyle);
+
+        Label lblLevel = new Label("Level: " + game.getCurrentLevel(), skin);
+        Label lblPoints = new Label("Points: 0", skin);
+        Label lblLives = new Label("Lives: 3", skin);
+        Label sep1 = new Label(" | ", skin);
+        Label sep2 = new Label(" | ", skin);
+
+        Table table = new Table();
+        table.top();
+        table.setFillParent(true);
+
+        table.add(lblLevel).pad(10);
+        table.add(sep1);
+        table.add(lblPoints).pad(10);
+        table.add(sep2);
+        table.add(lblLives).pad(10);
+
+        stage.addActor(table);
     }
 
     @Override
@@ -113,6 +165,7 @@ public class GameScreen implements Screen {
         }
         draw();
         logic();
+        stage.act(delta);
 
         this.frameCount++;
     }
@@ -159,17 +212,42 @@ public class GameScreen implements Screen {
     }
 
     @Override
-    public void pause() {}
+    public void pause() {
+        if (backgroundMusic != null && backgroundMusic.isPlaying()) {
+            backgroundMusic.pause();
+        }
+    }
 
     @Override
-    public void resume() {}
+    public void resume() {
+        if (backgroundMusic != null && !backgroundMusic.isPlaying()) {
+            backgroundMusic.play();
+        }
+    }
 
     @Override
-    public void hide() {}
+    public void hide() {
+        if (backgroundMusic != null) {
+            backgroundMusic.stop();
+        }
+    }
 
     @Override
     public void dispose() {
-        // Lembre-se de dar dispose nas texturas aqui se necessário!
+        stage.dispose();
+        skin.dispose();
+
+        if (backgroundMusic != null) {
+            backgroundMusic.dispose();
+        }
+
+        if (shootingSFX != null) {
+            shootingSFX.dispose();
+        }
+
+        if (explosionSFX != null) {
+            explosionSFX.dispose();
+        }
     }
 
     private void input(float delta)
