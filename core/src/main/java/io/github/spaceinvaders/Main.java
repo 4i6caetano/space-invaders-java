@@ -28,6 +28,7 @@ public class Main extends Game {
     Sprite alien3Instance2;
 
     Entity player;
+    Entity playerBullet;
 
     @Override
     public void create()
@@ -40,7 +41,10 @@ public class Main extends Game {
         backgroundTexture = new Texture("background/backgroundTexture.png");
 
         Texture playerTexture = new Texture("sprites/playerSprite.png");
+        Texture playerBulletTexture = new Texture("sprites/playerBullet.png");
+
         player = new Entity(spriteBatch, playerTexture, 60, 40);
+        playerBullet = new PlayerBullet(spriteBatch, playerBulletTexture, 5, 15);
 
         // Resizes and adjustments on sprites
 

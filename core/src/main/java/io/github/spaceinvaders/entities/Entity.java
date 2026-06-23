@@ -18,10 +18,17 @@ public class Entity {
 
     public Entity(SpriteBatch batch, Texture texture, float x, float y, float width, float height) {
         this.batch = batch;
-        
         this.entitySprite = new Sprite(texture);
         this.entitySprite.setSize(width, height);
         this.entitySprite.setPosition(x, y);
+    }
+
+    public void move(float x, float y) {
+        this.entitySprite.setPosition(x, y);
+    }
+
+    public void translate(float x, float y) {
+        this.entitySprite.translate(x, y);
     }
 
     public float getX() {
@@ -38,14 +45,6 @@ public class Entity {
 
     public float getHeight() {
         return this.entitySprite.getHeight();
-    }
-
-    public void move(float x, float y) {
-        this.entitySprite.setPosition(x, y);
-    }
-
-    public void translate(float x, float y) {
-        this.entitySprite.translate(x, y);
     }
 
     public void draw() {
