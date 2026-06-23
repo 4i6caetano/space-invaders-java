@@ -2,18 +2,25 @@ package io.github.spaceinvaders;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
+import com.badlogic.gdx.InputAdapter;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.utils.ScreenUtils;
 
 /** First screen of the application. Displayed after the application is created. */
-public class FirstScreen implements Screen {
+public class GameScreen implements Screen {
 
     private final Main game;
 
-    public FirstScreen(Main game)
+    private boolean movingLeft;
+    private boolean movingRight;
+    private boolean clickingLeft;
+    private boolean clickingRight;
+
+    public GameScreen(Main game)
     {
         this.game = game;
+
     }
 
     @Override
@@ -23,7 +30,7 @@ public class FirstScreen implements Screen {
 
     @Override
     public void render(float delta) {
-        input();
+        input(delta);
         draw();
     }
 
@@ -57,35 +64,24 @@ public class FirstScreen implements Screen {
         // Destroy screen's assets here.
     }
 
-    private void input()
+    private void input(float delta)
     {
         float speed = 70f;
-        float delta = Gdx.graphics.getDeltaTime();
-
-        if(Gdx.input.isKeyPressed(Input.Keys.A))
-        {
-            game.playerSprite.translateX(-speed * delta);
-        }
-        if(Gdx.input.isKeyPressed((Input.Keys.LEFT)))
+        if(Gdx.input.isKeyPressed(Input.Keys.A) || Gdx.input.isKeyJustPressed(Input.Keys.LEFT))
         {
             game.playerSprite.translateX(-speed * delta);
         }
 
-        if(Gdx.input.isKeyPressed(Input.Keys.D))
+        if(Gdx.input.isKeyPressed(Input.Keys.D) || Gdx.input.isKeyJustPressed(Input.Keys.RIGHT))
         {
             game.playerSprite.translateX( speed * delta);
         }
-        if(Gdx.input.isKeyPressed((Input.Keys.RIGHT)))
-        {
-            game.playerSprite.translateX(speed * delta);
-        }
 
+        if(Gdx.input.isButtonJustPressed(Input.Buttons.LEFT))
+        {
+a
+        }
         // PLAYER SHOOTS
-
-        if(Gdx.input.isKeyPressed((Input.Keys.SHIFT_LEFT)))
-        {
-            // PLAYER SHOOTS A BULLET
-        }
     }
 
     private void draw()
