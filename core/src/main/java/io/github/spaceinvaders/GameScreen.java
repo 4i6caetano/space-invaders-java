@@ -7,23 +7,14 @@ import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.math.MathUtils;
-import com.badlogic.gdx.scenes.scene2d.Stage;
-import com.badlogic.gdx.scenes.scene2d.ui.Label;
-import com.badlogic.gdx.scenes.scene2d.ui.Skin;
-import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.utils.ScreenUtils;
-import com.badlogic.gdx.utils.viewport.ScreenViewport;
 
 import io.github.spaceinvaders.entities.*;
 
 /** First screen of the application. Displayed after the application is created. */
 public class GameScreen implements Screen {
     private final Main game;
-
-    private Stage stage;
-    private Skin skin;
 
     private Music backgroundMusic;
     private Sound shootingSFX;
@@ -81,7 +72,6 @@ public class GameScreen implements Screen {
 
         int linesPerAlienType = MathUtils.floor(NUM_LINES / 3);
         for (int i = 0; i < NUM_LINES; i++) {
-            if (i == 1) continue;
 
             Texture currentTexture;
             Texture alternateTexture;
@@ -104,8 +94,6 @@ public class GameScreen implements Screen {
             for (int j = 0; j < NUM_COLUMNS; j++) {
                 int index = i * NUM_COLUMNS + j;
 
-                if (j == 4) continue;
-
                 aliens[index] = new Alien(game.spriteBatch, currentTexture, alternateTexture, ENTITY_WIDTH * j, y, ENTITY_WIDTH, ENTITY_HEIGHT);
             }
         }
@@ -117,43 +105,13 @@ public class GameScreen implements Screen {
 
     @Override
     public void show() {
-        stage = new Stage(new ScreenViewport());
-        Gdx.input.setInputProcessor(stage);
-
         backgroundMusic = Gdx.audio.newMusic(Gdx.files.internal("Spacing around.mp3"));
         backgroundMusic.setLooping(true);
         backgroundMusic.setVolume(0.5f);
         backgroundMusic.play();
 
         shootingSFX = Gdx.audio.newSound(Gdx.files.internal("effects/SfxLazer.ogg"));
-
-        // Configuração da Skin e Interface
-        skin = new Skin();
-        BitmapFont font = new BitmapFont();
-        skin.add("default", font);
-
-        Label.LabelStyle labelStyle = new Label.LabelStyle();
-        labelStyle.font = skin.getFont("default");
-        labelStyle.fontColor = Color.WHITE;
-        skin.add("default", labelStyle);
-
-        Label lblLevel = new Label("Level: " + game.getCurrentLevel(), skin);
-        Label lblPoints = new Label("Points: 0", skin);
-        Label lblLives = new Label("Lives: 3", skin);
-        Label sep1 = new Label(" | ", skin);
-        Label sep2 = new Label(" | ", skin);
-
-        Table table = new Table();
-        table.top();
-        table.setFillParent(true);
-
-        table.add(lblLevel).pad(10);
-        table.add(sep1);
-        table.add(lblPoints).pad(10);
-        table.add(sep2);
-        table.add(lblLives).pad(10);
-
-        stage.addActor(table);
+        explosionSFX = Gdx.audio.newSound(Gdx.files.internal("effects/SfxExplosion.ogg"));
     }
 
     @Override
@@ -165,40 +123,32 @@ public class GameScreen implements Screen {
         }
         draw();
         logic();
-        stage.act(delta);
 
         this.frameCount++;
     }
 
     private void updateAliens(float delta) {
-        boolean bateramNaBorda = false;
+        boolean hitTheBorder = false;
 
-        // 1. Calcula quanto eles devem andar NESSE frame
-        float deslocamentoX = alienSpeed * direction * delta;
+        float deltaX = alienSpeed * direction * delta;
 
-        // 2. Aplica o translate horizontal e checa as bordas
         for (Entity alien : aliens) {
             if (alien == null) continue;
 
-            // Move apenas o delta desse frame
-            alien.move(deslocamentoX, 0); 
+            alien.move(deltaX, 0);
 
-            // Checa a borda usando o getX() atualizado do seu alien
             if ((direction == 1 && alien.getX() + alien.getWidth() >= WORLD_WIDTH) || (direction == -1 && alien.getX() <= 0)) {
-                bateramNaBorda = true;
+                hitTheBorder = true;
             }
         }
 
-        // 3. Se bateram na borda, inverte a direção e dá um translate para baixo
-        if (bateramNaBorda) {
-            direction *= -1; // Inverte o sentido
+        if (hitTheBorder) {
+            direction *= -1;
 
             for (Entity alien : aliens) {
                 if (alien == null) continue;
 
-                // Só desce se não estiver abaixo do limite do jogo
                 if (alien.getY() - DROP_AMOUNT > LIMIT_Y) {
-                    // translate: anda 0 no X e -DROP_AMOUNT no Y (para baixo)
                     alien.move(0, -DROP_AMOUNT);
                 }
             }
@@ -234,9 +184,6 @@ public class GameScreen implements Screen {
 
     @Override
     public void dispose() {
-        stage.dispose();
-        skin.dispose();
-
         if (backgroundMusic != null) {
             backgroundMusic.dispose();
         }
@@ -264,7 +211,13 @@ public class GameScreen implements Screen {
 
         if(Gdx.input.isButtonJustPressed(Input.Buttons.LEFT))
         {
+            shootingSFX.play();
+        }
 
+        if (Gdx.input.isKeyJustPressed(Input.Keys.K)) {
+            this.aliens[MathUtils.random(0, NUM_COLUMNS * NUM_LINES - 1)] = null;
+            game.totalPoints += 100;
+            explosionSFX.play();
         }
     }
 

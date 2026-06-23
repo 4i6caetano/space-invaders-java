@@ -11,6 +11,7 @@ import com.badlogic.gdx.Gdx;
 public class Main extends Game {
 
     int currentLevel = 1;
+    int totalPoints = 0;
 
     FitViewport viewport;
 
