@@ -7,6 +7,7 @@ import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.math.MathUtils;
+import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.utils.ScreenUtils;
 
@@ -19,6 +20,10 @@ public class GameScreen implements Screen {
     private Music backgroundMusic;
     private Sound shootingSFX;
     private Sound explosionSFX;
+
+    private Label lbPoints;
+    private Label lbLevel;
+    private Entity lives[];
 
     private final float WORLD_WIDTH;
     private final float WORLD_HEIGHT;
@@ -119,6 +124,11 @@ public class GameScreen implements Screen {
         Texture playerTexture = new Texture("sprites/playerSprite.png");
         this.player = new Entity(game.spriteBatch, playerTexture, WORLD_WIDTH / 2, 0, ENTITY_WIDTH, ENTITY_HEIGHT);
         playerSpeed = ENTITY_WIDTH;
+
+        lives = new Entity[game.livesLeft];
+        for (int i = 0; i < game.livesLeft; i++) {
+            lives[i] = new Entity(game.spriteBatch, playerTexture, WORLD_WIDTH - (ENTITY_WIDTH / 2 * (game.livesLeft - i)), 0, ENTITY_WIDTH / 2, ENTITY_HEIGHT / 2);
+        }
     }
 
     //
@@ -240,6 +250,8 @@ public class GameScreen implements Screen {
                 if (explosionSFX != null) explosionSFX.play();
                 
                 game.livesLeft--;
+
+                lives[game.livesLeft] = null;
             }
         }
 
@@ -302,8 +314,14 @@ public class GameScreen implements Screen {
             bullet.draw();
         }
 
+        for (Entity life : lives) {
+            if (life != null) {
+                life.draw();
+            }
+        }
+
         if (explosion != null) {
-        explosion.draw();
+            explosion.draw();
         }
 
         game.spriteBatch.end();

@@ -23,7 +23,7 @@ public class MenuScreen implements Screen {
 
     @Override
     public void show() {
-        font = new BitmapFont();
+        font = game.skin.getFont("default");
 
         logoTexture = new Texture(Gdx.files.internal("sprites/SpaceInvaders.png"));
         logo = new Sprite(logoTexture);
