@@ -6,24 +6,45 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 
 public class Entity {
     SpriteBatch batch;
-    Sprite EntitySprite;
+    Sprite entitySprite;
 
     public Entity(SpriteBatch batch, Texture texture) {
-        this(batch, texture, 60, 40);
+        this(batch, texture, 0, 0, 60, 40);
     }
 
     public Entity(SpriteBatch batch, Texture texture, float width, float height) {
+        this(batch, texture, 0, 0, width, height);
+    }
+
+    public Entity(SpriteBatch batch, Texture texture, float x, float y, float width, float height) {
         this.batch = batch;
         
-        this.EntitySprite = new Sprite(texture);
-        this.EntitySprite.setSize(width, height);
+        this.entitySprite = new Sprite(texture);
+        this.entitySprite.setSize(width, height);
+        this.entitySprite.setPosition(x, y);
+    }
+
+    public float getX() {
+        return this.entitySprite.getX();
+    }
+
+    public float getY() {
+        return this.entitySprite.getY();
+    }
+
+    public float getWidth() {
+        return this.entitySprite.getWidth();
+    }
+
+    public float getHeight() {
+        return this.entitySprite.getHeight();
     }
 
     public void move(float newX, float newY) {
-        this.EntitySprite.setPosition(newX, newY);
+        this.entitySprite.translate(newX, newY);
     }
 
     public void draw() {
-        this.EntitySprite.draw(this.batch);
+        this.entitySprite.draw(this.batch);
     }
 }

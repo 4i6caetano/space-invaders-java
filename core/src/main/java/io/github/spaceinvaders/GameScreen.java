@@ -25,10 +25,14 @@ public class GameScreen implements Screen {
 
     private final int NUM_COLUMNS = 8;
     private final int NUM_LINES = 3;
-    private final int ALIEN_WIDTH = 30;
-    private final int ALIENT_HEIGHT = 20;
 
     private Entity aliens[];
+
+    // VARIÁVEIS DE MOVIMENTO DOS ALIENS
+    private float alienSpeed = 40f;      // Velocidade horizontal
+    private int direction = 1;           // 1 = Direita, -1 = Esquerda
+    private final float DROP_AMOUNT = 15f; // Quanto eles descem ao bater na borda
+    private final float LIMIT_Y = 100f;   // Limite inferior (altura mínima que podem chegar)
 
     public GameScreen(Main game)
     {
@@ -50,6 +54,14 @@ public class GameScreen implements Screen {
         {
             this.alienSpeed = baseSpeed * 2;
         }
+        
+        int ALIEN_WIDTH = (int) (game.viewport.getWorldWidth() / (NUM_COLUMNS + 2));
+        int ALIENT_HEIGHT = ALIEN_WIDTH / 2;
+
+        // Otimização: Carregar texturas fora do loop para evitar memory leak
+        Texture alien1 = new Texture("sprites/alien1Instance1.png");
+        Texture alien2 = new Texture("sprites/alien2Instance1.png");
+        Texture alien3 = new Texture("sprites/alien3Instance1.png");
 
         for (int i = 0; i < NUM_LINES; i++) {
             for (int j = 0; j < NUM_COLUMNS; j++) {
@@ -57,66 +69,92 @@ public class GameScreen implements Screen {
                 float y = game.viewport.getWorldHeight();
 
                 if (i % 3 == 0) {
-                    currentTexture = new Texture("sprites/alien1Instance1.png");
+                    currentTexture = alien1;
                     y -= ALIENT_HEIGHT;
                 }
                 else if (i % 3 == 1) {
-                    currentTexture = new Texture("sprites/alien2Instance1.png");
+                    currentTexture = alien2;
                     y -= ALIENT_HEIGHT * 2;
                 }
                 else {
-                    currentTexture = new Texture("sprites/alien3Instance1.png");
+                    currentTexture = alien3;
                     y -= ALIENT_HEIGHT * 3;
                 }
 
                 int index = i * NUM_COLUMNS + j;
 
                 aliens[index] = new Entity(game.spriteBatch, currentTexture, ALIEN_WIDTH, ALIENT_HEIGHT);
-                aliens[index].move(ALIEN_WIDTH * j, y);
+                aliens[index].move(ALIEN_WIDTH * (j + 1), y);
             }
         }
     }
 
     @Override
     public void show() {
-        // Prepare your screen here.
     }
 
     @Override
     public void render(float delta) {
         input(delta);
+        updateAliens(delta); // <- Atualiza a lógica dos aliens
         draw();
         logic();
     }
 
+    private void updateAliens(float delta) {
+        boolean bateramNaBorda = false;
+        float worldWidth = game.viewport.getWorldWidth();
+
+        // 1. Calcula quanto eles devem andar NESSE frame
+        float deslocamentoX = alienSpeed * direction * delta;
+
+        // 2. Aplica o translate horizontal e checa as bordas
+        for (Entity alien : aliens) {
+            if (alien == null) continue;
+
+            // Move apenas o delta desse frame
+            alien.move(deslocamentoX, 0); 
+
+            // Checa a borda usando o getX() atualizado do seu alien
+            if ((direction == 1 && alien.getX() + alien.getWidth() >= worldWidth) || (direction == -1 && alien.getX() <= 0)) {
+                bateramNaBorda = true;
+            }
+        }
+
+        // 3. Se bateram na borda, inverte a direção e dá um translate para baixo
+        if (bateramNaBorda) {
+            direction *= -1; // Inverte o sentido
+
+            for (Entity alien : aliens) {
+                if (alien == null) continue;
+
+                // Só desce se não estiver abaixo do limite do jogo
+                if (alien.getY() - DROP_AMOUNT > LIMIT_Y) {
+                    // translate: anda 0 no X e -DROP_AMOUNT no Y (para baixo)
+                    alien.move(0, -DROP_AMOUNT);
+                }
+            }
+        }
+    }
+
     @Override
     public void resize(int width, int height) {
-        // If the window is minimized on a desktop (LWJGL3) platform, width and height are 0, which causes problems.
-        // In that case, we don't resize anything, and wait for the window to be a normal size before updating.
         if(width <= 0 || height <= 0) return;
         game.viewport.update(width, height, true);
-
-        // Resize your screen here. The parameters represent the new window size.
     }
 
     @Override
-    public void pause() {
-        // Invoked when your application is paused.
-    }
+    public void pause() {}
 
     @Override
-    public void resume() {
-        // Invoked when your application is resumed after pause.
-    }
+    public void resume() {}
 
     @Override
-    public void hide() {
-        // This method is called when another screen replaces this one.
-    }
+    public void hide() {}
 
     @Override
     public void dispose() {
-        // Destroy screen's assets here.
+        // Lembre-se de dar dispose nas texturas aqui se necessário!
     }
 
     private void input(float delta)
@@ -134,9 +172,7 @@ public class GameScreen implements Screen {
 
         if(Gdx.input.isButtonJustPressed(Input.Buttons.LEFT))
         {
-
         }
-        // PLAYER SHOOTS
     }
 
     private void draw()
@@ -150,7 +186,9 @@ public class GameScreen implements Screen {
         game.playerSprite.draw(game.spriteBatch);
 
         for (int i = 0; i < NUM_COLUMNS * NUM_LINES; i++) {
-            aliens[i].draw();
+            if (aliens[i] != null) { // Evita erro se o alien morrer
+                aliens[i].draw();
+            }
         }
 
         game.spriteBatch.end();
