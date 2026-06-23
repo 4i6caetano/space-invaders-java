@@ -55,15 +55,11 @@ public class Main extends Game {
         labelStyle.font = skin.getFont("default");
         skin.add("default", labelStyle);
 
-<<<<<<< Updated upstream
         labelStyle = new Label.LabelStyle();
         labelStyle.font = skin.getFont("default-big");
         skin.add("default-big", labelStyle);
 
         setScreen(new MenuScreen(this));
-=======
-        setScreen(new FirstScreen());
->>>>>>> Stashed changes
     }
 
     @Override

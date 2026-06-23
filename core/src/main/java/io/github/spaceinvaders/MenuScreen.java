@@ -5,33 +5,15 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
-import com.badlogic.gdx.graphics.g2d.Sprite;
+import com.badlogic.gdx.scenes.scene2d.ui.Label;
+import com.badlogic.gdx.scenes.scene2d.ui.Label.LabelStyle;
 import com.badlogic.gdx.utils.ScreenUtils;
-import com.badlogic.gdx.graphics.Texture;
 
 public class MenuScreen implements Screen {
     private final Main game;
 
-    private BitmapFont font;
     private int opcaoSelecionada = 0;
-<<<<<<< Updated upstream:core/src/main/java/io/github/spaceinvaders/MenuScreen.java
-
-    private Sprite logo;
-    private Texture logoTexture;
-
-    public MenuScreen(Main game) {
-        this.game = game;
-    }
-
-    @Override
-    public void show() {
-        font = game.skin.getFont("default");
-
-        logoTexture = new Texture(Gdx.files.internal("sprites/SpaceInvaders.png"));
-        logo = new Sprite(logoTexture);
-        logo.setPosition((game.viewport.getWorldWidth() - logo.getWidth()) / 2, game.viewport.getWorldHeight() - logo.getHeight());
-=======
-    private String mensagemMenu = "";
+    private BitmapFont font;
     //para vram
     private Texture naveTexture;
     private float naveX = 100;
@@ -43,11 +25,16 @@ public class MenuScreen implements Screen {
     private com.badlogic.gdx.utils.FloatArray estrelasY;
     private final int QTD_ESTRELAS = 50;
 
+    private Label lbNewGame, lbExit;
+
+    public MenuScreen(Main game) {
+        this.game = game;
+        this.font = game.skin.getFont("default");
+    }
+
     @Override
     public void show() {
         //batch vai renderizar as imagens e o font escrever
-        batch = new SpriteBatch();
-        font = new BitmapFont();
         naveTexture = new Texture(Gdx.files.internal("sprites/NewPiskel.png"));
         //gemini deu a ideia de rastrear as bolinhas individualmete, ou seja, cada bolinha vai
         // vai ter uma posição unica, isso tudo guardado nesse floatArray
@@ -58,7 +45,12 @@ public class MenuScreen implements Screen {
             estrelasX.add(com.badlogic.gdx.math.MathUtils.random(0, Gdx.graphics.getWidth()));
             estrelasY.add(com.badlogic.gdx.math.MathUtils.random(0, Gdx.graphics.getHeight()));
         }
->>>>>>> Stashed changes:core/src/main/java/io/github/spaceinvaders/FirstScreen.java
+
+        lbNewGame = new Label("NEW GAME", game.skin.get("default", LabelStyle.class));
+        lbNewGame.setPosition((game.viewport.getWorldWidth() - lbNewGame.getWidth()) / 2, 150);
+
+        lbExit = new Label("EXIT", game.skin.get("default", LabelStyle.class));
+        lbExit.setPosition((game.viewport.getWorldWidth() - lbExit.getWidth()) / 2, 100);
     }
 
     @Override
@@ -79,9 +71,6 @@ public class MenuScreen implements Screen {
 
         game.spriteBatch.begin();
 
-<<<<<<< Updated upstream:core/src/main/java/io/github/spaceinvaders/MenuScreen.java
-        logo.draw(game.spriteBatch);
-=======
         font.setColor(com.badlogic.gdx.graphics.Color.WHITE);
         for (int i = 0; i < QTD_ESTRELAS; i++) {
             //isso que vai fazer a magica das volinhas passarem, pois ele vai fornecer a altura e veloidade corretas
@@ -95,37 +84,27 @@ public class MenuScreen implements Screen {
             }
             estrelasY.set(i, y);
             //desenhando a bolinha usando as posições aleatórias
-            font.draw(batch, ".", estrelasX.get(i), estrelasY.get(i));
+            font.draw(game.spriteBatch, ".", estrelasX.get(i), estrelasY.get(i));
         }
 
+        game.spriteBatch.draw(naveTexture, naveX, naveY, 132, 132);
 
-
-        font.setColor(com.badlogic.gdx.graphics.Color.WHITE);
-        font.draw(batch, "Space Invaders", 100, 300);
->>>>>>> Stashed changes:core/src/main/java/io/github/spaceinvaders/FirstScreen.java
+        Texture spaceInvaderTexture = new Texture(Gdx.files.internal("sprites/SpaceInvaders.png"));
+        game.spriteBatch.draw(spaceInvaderTexture, (game.viewport.getWorldWidth() - spaceInvaderTexture.getWidth()) / 2, game.viewport.getWorldHeight() - spaceInvaderTexture.getHeight() - 50);
 
         if (opcaoSelecionada == 0) {
-            font.setColor(com.badlogic.gdx.graphics.Color.YELLOW);
-        } else {
-            font.setColor(com.badlogic.gdx.graphics.Color.WHITE);
+            lbNewGame.setText("NEW GAME <-");
+            lbExit.setText("EXIT");
         }
-        font.draw(game.spriteBatch, "New Game", 100, 250);
-
-        if (opcaoSelecionada == 1) {
-            font.setColor(com.badlogic.gdx.graphics.Color.YELLOW);
-        } else {
-            font.setColor(com.badlogic.gdx.graphics.Color.WHITE);
+        else if (opcaoSelecionada == 1) {
+            lbNewGame.setText("NEW GAME");
+            lbExit.setText("EXIT <-");
         }
-        font.draw(game.spriteBatch, "Exit", 100, 210);
 
-<<<<<<< Updated upstream:core/src/main/java/io/github/spaceinvaders/MenuScreen.java
+        lbNewGame.draw(game.spriteBatch, 1);
+        lbExit.draw(game.spriteBatch, 1);
+
         game.spriteBatch.end();
-=======
-        font.setColor(com.badlogic.gdx.graphics.Color.WHITE);
-        font.draw(batch, mensagemMenu, 100, 200);
-        batch.draw(naveTexture, naveX, naveY, 132, 132);
-        batch.end();
->>>>>>> Stashed changes:core/src/main/java/io/github/spaceinvaders/FirstScreen.java
 
         if (Gdx.input.isKeyJustPressed(Input.Keys.DOWN)) {
             opcaoSelecionada++;
