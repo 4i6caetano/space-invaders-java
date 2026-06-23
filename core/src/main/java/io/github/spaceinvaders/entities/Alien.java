@@ -13,15 +13,24 @@ public class Alien extends Entity {
         alternateTexture = texture2;
     }
 
-    @Override
-    public void move(float xAmount, float yAmount) {
-        super.move(xAmount, yAmount);
-        
+    public void changeTexture() {
         if (this.entitySprite.getTexture().equals(this.entityTexture)) {
             this.entitySprite.setTexture(this.alternateTexture);
         }
         else {
             this.entitySprite.setTexture(this.entityTexture);
         }
+    }
+
+    @Override
+    public void move(float xAmount, float yAmount) {
+        super.move(xAmount, yAmount);
+        changeTexture();
+    }
+
+    @Override
+    public void translate(float x, float y) {
+        super.translate(x, y);
+        changeTexture();
     }
 }

@@ -42,7 +42,6 @@ public class Main extends Game {
         backgroundTexture = new Texture("background/backgroundTexture.png");
 
         Texture playerTexture = new Texture("sprites/playerSprite.png");
-        Texture playerBulletTexture = new Texture("sprites/playerBullet.png");
 
         player = new Entity(spriteBatch, playerTexture, 60, 40);
 
